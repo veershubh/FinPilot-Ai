@@ -1,0 +1,129 @@
+{
+  "metadata": {
+    "name": "Sample Financial Profiles",
+    "description": "5 synthetic user financial profiles representing diverse financial health scenarios for testing and development",
+    "version": "1.0",
+    "created": "2026-05-24",
+    "record_count": 5,
+    "schema_version": "1.0",
+    "synthetic": true,
+    "currency": "INR"
+  },
+  "data": [
+    {
+      "id": "profile_001",
+      "name": "Aarav Sharma",
+      "age": 32,
+      "occupation": "Software Engineer",
+      "financial_health": "healthy",
+      "monthly_income": 85000,
+      "monthly_expenses": 42000,
+      "current_savings": 450000,
+      "emergency_fund": 170000,
+      "existing_emis": 0,
+      "credit_score_range": "750-800",
+      "expense_breakdown": {
+        "rent": 15000,
+        "food": 8000,
+        "transport": 4000,
+        "utilities": 3000,
+        "entertainment": 5000,
+        "insurance": 4000,
+        "misc": 3000
+      },
+      "notes": "Healthy finances — high savings rate, no existing EMIs, strong emergency fund covering 4+ months of expenses."
+    },
+    {
+      "id": "profile_002",
+      "name": "Priya Patel",
+      "age": 28,
+      "occupation": "Marketing Manager",
+      "financial_health": "moderate",
+      "monthly_income": 45000,
+      "monthly_expenses": 32000,
+      "current_savings": 120000,
+      "emergency_fund": 50000,
+      "existing_emis": 5000,
+      "credit_score_range": "700-750",
+      "expense_breakdown": {
+        "rent": 12000,
+        "food": 6000,
+        "transport": 3500,
+        "utilities": 2500,
+        "entertainment": 3000,
+        "insurance": 2000,
+        "misc": 3000
+      },
+      "notes": "Moderate finances — reasonable savings, existing EMI commitment, emergency fund covers ~1.5 months."
+    },
+    {
+      "id": "profile_003",
+      "name": "Rohan Mehta",
+      "age": 24,
+      "occupation": "Junior Analyst",
+      "financial_health": "struggling",
+      "monthly_income": 22000,
+      "monthly_expenses": 19500,
+      "current_savings": 15000,
+      "emergency_fund": 5000,
+      "existing_emis": 3000,
+      "credit_score_range": "600-650",
+      "expense_breakdown": {
+        "rent": 8000,
+        "food": 4500,
+        "transport": 2500,
+        "utilities": 1500,
+        "entertainment": 1000,
+        "insurance": 0,
+        "misc": 2000
+      },
+      "notes": "Struggling finances — minimal disposable income, very low emergency fund, existing EMI burden on tight budget."
+    },
+    {
+      "id": "profile_004",
+      "name": "Sneha Iyer",
+      "age": 26,
+      "occupation": "UX Designer (Freelance)",
+      "financial_health": "moderate",
+      "monthly_income": 55000,
+      "monthly_expenses": 38000,
+      "current_savings": 80000,
+      "emergency_fund": 30000,
+      "existing_emis": 8000,
+      "credit_score_range": "680-720",
+      "expense_breakdown": {
+        "rent": 14000,
+        "food": 7000,
+        "transport": 3000,
+        "utilities": 3000,
+        "entertainment": 4000,
+        "insurance": 3000,
+        "misc": 4000
+      },
+      "notes": "Moderate finances — freelance income can be variable, existing laptop EMI, building emergency fund."
+    },
+    {
+      "id": "profile_005",
+      "name": "Vikram Reddy",
+      "age": 55,
+      "occupation": "Senior Government Officer",
+      "financial_health": "healthy",
+      "monthly_income": 110000,
+      "monthly_expenses": 55000,
+      "current_savings": 1800000,
+      "emergency_fund": 500000,
+      "existing_emis": 0,
+      "credit_score_range": "800-850",
+      "expense_breakdown": {
+        "rent": 0,
+        "food": 12000,
+        "transport": 5000,
+        "utilities": 4000,
+        "entertainment": 8000,
+        "insurance": 10000,
+        "misc": 16000
+      },
+      "notes": "Very healthy finances — owns home (no rent), substantial savings, strong emergency fund, nearing retirement with solid financial position."
+    }
+  ]
+}

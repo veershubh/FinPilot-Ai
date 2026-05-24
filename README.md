@@ -1,176 +1,181 @@
 # FinPilot AI
 
-FinPilot AI is an AI-powered financial planning and decision intelligence system that helps users manage expenses, analyze affordability, compare EMI vs full-payment decisions, and generate personalized financial recommendations using intelligent AI agents.
+> **Your Intelligent Financial Co-Pilot** — An AI-powered financial planning platform that helps users make smarter decisions about purchases, EMIs, budgets, and financial goals.
 
 ---
 
-## Features
+## Overview
 
-- Smart Expense Tracking
-- AI Budget Allocation
+FinPilot AI is a full-stack financial planning system with an intelligent decision engine at its core. It analyzes a user's financial situation and provides data-driven recommendations on whether to purchase via EMI, pay in full, or delay a purchase — with detailed reasoning, risk assessment, and actionable tips.
+
+**Key Capabilities:**
 - EMI vs Full Payment Decision Engine
-- Purchase Affordability Prediction
-- Financial Health Scoring
-- Goal-Based Savings Planning
-- AI Financial Recommendations
-- Conversational Financial Assistant
-- Multi-Agent AI Architecture
-
----
-
-## Problem Statement
-
-Many students and young professionals struggle with:
-- Managing monthly allowance or salary
-- Understanding whether a purchase is affordable
-- Deciding between EMI and full payment
-- Maintaining emergency savings
-- Planning financial goals effectively
-
-FinPilot AI solves these problems using intelligent financial reasoning and AI-powered recommendations.
-
----
-
-## Core AI Features
-
-### Smart EMI Decision System
-Analyzes:
-- Current savings
-- Monthly income & expenses
-- Emergency funds
-- Future financial impact
-- Risk level
-
-Provides intelligent recommendations such as:
-- EMI preferred
-- Full payment recommended
-- Purchase delay suggestion
-
----
-
-### AI Budget Planning
-Automatically distributes monthly income into:
-- Savings
-- Essentials
-- Education
-- Leisure
-- Emergency reserve
-
----
-
-### Purchase Affordability Prediction
-Predicts whether a user can safely afford a product based on:
-- Spending patterns
-- Cash flow
-- Future obligations
-- Savings goals
-
----
-
-### Financial Health Analysis
-Generates:
-- Savings score
-- Financial stability score
-- Spending risk analysis
-- Overspending alerts
-
----
-
-## Architecture
-
-```text
-User Input
-    ↓
-Frontend Dashboard
-    ↓
-FastAPI Backend
-    ↓
-AI Agent Orchestrator
-    ↓
---------------------------------
-| Expense Analysis Agent      |
-| Budget Planning Agent       |
-| EMI Decision Agent          |
-| Goal Planning Agent         |
-| Financial Risk Agent        |
---------------------------------
-    ↓
-AI Recommendation Engine
-    ↓
-Dashboard + Chat Interface
-```
+- Financial Health Scoring (0-100)
+- Multi-dimensional Risk Assessment
+- Budget Analysis and Optimization
+- AI-Powered Financial Advice (coming soon)
+- Multi-Agent AI Architecture (coming soon)
 
 ---
 
 ## Tech Stack
 
-### Frontend
-- React
-- Next.js
-- Tailwind CSS
-
-### Backend
-- FastAPI
-- Python
-
-### AI & Machine Learning
-- Scikit-learn
-- Pandas
-- NumPy
-- Gemini API / OpenAI API
-
-### Database
-- PostgreSQL
-
-### AI Architecture
-- Multi-Agent AI System
-- Agentic Decision Engine
+| Layer | Technology |
+|---|---|
+| **Frontend** | Next.js 14, React, TypeScript, Tailwind CSS |
+| **Backend** | Python, FastAPI, Pydantic, Uvicorn |
+| **AI/ML** | Scikit-learn, Pandas, NumPy (Gemini/OpenAI ready) |
+| **Database** | PostgreSQL (SQLAlchemy ORM) |
+| **Infrastructure** | Docker, Docker Compose |
 
 ---
 
-## Folder Structure
+## Project Structure
 
-```text
+```
 finpilot-ai/
-│
-├── frontend/
-├── backend/
-├── ai-agents/
-├── datasets/
-├── docs/
-├── README.md
-├── requirements.txt
-└── .gitignore
+|
+|-- frontend/                 # Next.js + Tailwind CSS dashboard
+|   |-- src/
+|   |   |-- app/              # App router pages
+|   |   |-- components/       # Reusable UI components
+|   |   |-- services/         # API client services
+|   |   |-- hooks/            # Custom React hooks
+|   |   |-- utils/            # Utility functions
+|   |   +-- types/            # TypeScript type definitions
+|   +-- package.json
+|
+|-- backend/                  # FastAPI Python backend
+|   |-- app/
+|   |   |-- routes/           # API endpoint definitions
+|   |   |-- services/         # Business logic layer
+|   |   |-- models/           # Pydantic request/response schemas
+|   |   |-- schemas/          # Common response schemas
+|   |   |-- utils/            # Reusable utility functions
+|   |   |-- database/         # PostgreSQL connection & ORM models
+|   |   |-- middleware/       # Request logging, rate limiting
+|   |   |-- config/           # Constants and configuration
+|   |   +-- ai_agents/        # AI agent classes
+|   |-- run.py                # Server entry point
+|   +-- requirements.txt      # Python dependencies
+|
+|-- datasets/                 # Sample financial data
+|-- docs/                     # Architecture, API docs, roadmap
+|-- docker-compose.yml        # Multi-service orchestration
++-- README.md                 # This file
 ```
 
 ---
 
-## Future Enhancements
+## Quick Start
 
-- Bank Statement Analysis
-- SMS Transaction Detection
-- Voice-Based Financial Assistant
-- Investment Recommendation Engine
-- AI Financial Forecasting
-- Personalized Spending Insights
-- Multi-User Financial Analytics
-- Mobile Application
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- npm or yarn
+
+### 1. Backend Setup
+
+```bash
+cd backend
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# macOS/Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+python run.py
+```
+
+Backend runs at **http://localhost:8000** | Docs at **http://localhost:8000/docs**
+
+### 2. Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs at **http://localhost:3000**
+
+### 3. Docker (optional)
+
+```bash
+docker-compose up --build
+```
 
 ---
 
-## Project Vision
+## Core API
 
-FinPilot AI aims to become an intelligent personal financial advisor that helps users make smarter financial decisions through AI-powered reasoning, prediction, and automation.
+### Health Check
+```
+GET /health
+```
+
+### Analyze Purchase (EMI vs Full Payment)
+```
+POST /api/v1/analyze-purchase
+Content-Type: application/json
+
+{
+  "product_price": 80000,
+  "monthly_income": 15000,
+  "monthly_expenses": 9000,
+  "current_savings": 95000,
+  "emergency_fund": 20000,
+  "emi_months": 12,
+  "interest_rate": 12
+}
+```
+
+**Response:**
+```json
+{
+  "recommendation": "EMI Preferred",
+  "risk_level": "Low",
+  "monthly_emi": 7107.90,
+  "remaining_savings": 95000.0,
+  "financial_health_score": 72,
+  "reason": "EMI preserves emergency liquidity and maintains financial stability.",
+  "detailed_reasons": ["..."],
+  "financial_breakdown": { "..." },
+  "tips": ["..."]
+}
+```
 
 ---
 
-## Status
+## AI Agents
 
-Currently under active development.
+| Agent | Purpose | Status |
+|---|---|---|
+| EMI Decision Agent | Smart purchase analysis | Active |
+| Budget Agent | Budget optimization | Template |
+| Risk Agent | Multi-dimensional risk scoring | Template |
+| Goal Agent | Financial goal planning | Template |
+| Expense Agent | Expense tracking & anomalies | Template |
+| Chat Agent | Conversational AI assistant | Template |
+| Agent Orchestrator | Multi-agent coordination | Template |
 
 ---
 
-## Author
+## Documentation
 
-Shubham Veer
-BTech CSE (AI & ML)
+- [Architecture](docs/architecture.md) — System design and data flow
+- [API Documentation](docs/api_docs.md) — Endpoint reference with examples
+- [Roadmap](docs/roadmap.md) — Development phases and milestones
+
+---
+
+## License
+
+MIT License - See [LICENSE](LICENSE) for details.
+
+---
+
+**Built with precision by the FinPilot AI Team**

@@ -1,0 +1,24 @@
+# FinPilot AI - Backend Dependencies
+# ====================================
+
+# Web Framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Data Validation
+pydantic==2.10.3
+pydantic-settings==2.7.0
+
+# Environment Variables
+python-dotenv==1.0.1
+
+# CORS & HTTP
+python-multipart==0.0.18
+
+# Utilities
+httpx==0.28.1
+
+# Future AI/LLM Integration (uncomment when needed)
+# openai==1.58.1
+# langchain==0.3.13
+# langchain-openai==0.3.0
