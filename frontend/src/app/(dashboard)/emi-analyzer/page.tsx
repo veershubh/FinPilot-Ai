@@ -1,7 +1,3 @@
-/**
- * FinPilot AI - EMI Analyzer Page
- */
-
 "use client";
 
 import React from "react";
@@ -16,17 +12,12 @@ export default function EMIAnalyzerPage() {
   const { result, loading, error, analyze, reset } = useAnalysis();
 
   return (
-    <PageWrapper
-      title="EMI Analyzer"
-      subtitle="Compare EMI vs Full Payment options for any purchase"
-    >
+    <PageWrapper title="EMI Analyzer" subtitle="Compare EMI vs Full Payment options for any purchase">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left: Form */}
         <div>
           <EMIForm onSubmit={analyze} loading={loading} />
         </div>
 
-        {/* Right: Results */}
         <div>
           {error && (
             <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5 mb-5">
@@ -37,8 +28,8 @@ export default function EMIAnalyzerPage() {
 
           {loading && (
             <div className="flex flex-col items-center justify-center py-20">
-              <div className="w-10 h-10 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
-              <p className="text-sm text-gray-400 mt-4">Analyzing your finances...</p>
+              <div className="w-10 h-10 rounded-full border-2 border-[#10B981]/30 border-t-[#10B981] animate-spin" />
+              <p className="text-sm text-[#94A3B8] mt-4">Analyzing your finances...</p>
             </div>
           )}
 
@@ -55,14 +46,14 @@ export default function EMIAnalyzerPage() {
           )}
 
           {!result && !loading && !error && (
-            <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-4">
+            <div className="flex flex-col items-center justify-center py-20 text-[#64748B]">
+              <div className="w-16 h-16 rounded-2xl bg-[#111827] border border-[#1F2937] flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
               </div>
               <p className="text-sm font-medium">Ready to Analyze</p>
-              <p className="text-xs text-gray-600 mt-1 text-center max-w-[250px]">
+              <p className="text-xs text-[#64748B] mt-1 text-center max-w-[250px]">
                 Fill in the form and click &quot;Analyze Purchase&quot; to get your recommendation.
               </p>
             </div>

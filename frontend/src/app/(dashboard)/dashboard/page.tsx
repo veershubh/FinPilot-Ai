@@ -1,7 +1,3 @@
-/**
- * FinPilot AI - Dashboard Page
- */
-
 "use client";
 
 import React from "react";
@@ -10,19 +6,11 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { HealthScoreGauge } from "@/components/dashboard/HealthScoreGauge";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Card } from "@/components/ui/Card";
-import {
-  Wallet,
-  TrendingUp,
-  ShieldCheck,
-  PiggyBank,
-} from "lucide-react";
+import { Wallet, TrendingUp, ShieldCheck, PiggyBank } from "lucide-react";
 
 export default function DashboardPage() {
   return (
-    <PageWrapper
-      title="Dashboard"
-      subtitle="Your financial overview at a glance"
-    >
+    <PageWrapper title="Dashboard" subtitle="Your financial overview at a glance">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         <StatsCard
@@ -59,34 +47,30 @@ export default function DashboardPage() {
 
       {/* Health Score + Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Health Score */}
         <Card className="flex flex-col items-center justify-center py-8">
           <HealthScoreGauge score={75} size={180} />
-          <p className="text-xs text-gray-500 mt-4 text-center max-w-[200px]">
+          <p className="text-xs text-[#64748B] mt-4 text-center max-w-[200px]">
             Your financial health is strong. Keep building your emergency fund.
           </p>
         </Card>
 
-        {/* Quick Actions */}
         <div className="lg:col-span-2">
-          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">
+          <h3 className="text-sm font-semibold text-[#94A3B8] uppercase tracking-wider mb-4">
             Quick Actions
           </h3>
           <QuickActions />
         </div>
       </div>
 
-      {/* Recent Activity Placeholder */}
+      {/* Recent Activity */}
       <Card className="p-6">
-        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">
+        <h3 className="text-sm font-semibold text-[#94A3B8] uppercase tracking-wider mb-4">
           Recent Activity
         </h3>
-        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+        <div className="flex flex-col items-center justify-center py-12 text-[#64748B]">
           <TrendingUp className="w-10 h-10 mb-3 opacity-30" />
           <p className="text-sm">No recent analyses yet</p>
-          <p className="text-xs text-gray-600 mt-1">
-            Use the EMI Analyzer to get started
-          </p>
+          <p className="text-xs text-[#64748B] mt-1">Use the EMI Analyzer to get started</p>
         </div>
       </Card>
     </PageWrapper>

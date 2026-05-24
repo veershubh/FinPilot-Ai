@@ -1,7 +1,3 @@
-/**
- * FinPilot AI - Page Content Wrapper
- */
-
 import React from "react";
 
 interface PageWrapperProps {
@@ -15,9 +11,7 @@ export function PageWrapper({ children, title, subtitle }: PageWrapperProps) {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white tracking-tight">{title}</h1>
-        {subtitle && (
-          <p className="mt-1 text-sm text-gray-400">{subtitle}</p>
-        )}
+        {subtitle && <p className="mt-1 text-sm text-[#94A3B8]">{subtitle}</p>}
       </div>
       {children}
     </div>

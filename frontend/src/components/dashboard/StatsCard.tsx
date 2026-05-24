@@ -1,7 +1,3 @@
-/**
- * FinPilot AI - Stats Card Component
- */
-
 "use client";
 
 import React from "react";
@@ -19,44 +15,36 @@ interface StatsCardProps {
   accentColor?: string;
 }
 
-export function StatsCard({
-  title,
-  value,
-  subtitle,
-  trend,
-  trendValue,
-  icon,
-  accentColor = "emerald",
-}: StatsCardProps) {
+export function StatsCard({ title, value, subtitle, trend, trendValue, icon, accentColor = "emerald" }: StatsCardProps) {
   const trendColors = {
-    up: "text-emerald-400 bg-emerald-500/10",
-    down: "text-red-400 bg-red-500/10",
-    neutral: "text-gray-400 bg-gray-500/10",
+    up: "text-[#10B981] bg-[#10B981]/10",
+    down: "text-[#EF4444] bg-[#EF4444]/10",
+    neutral: "text-[#94A3B8] bg-[#94A3B8]/10",
+  };
+
+  const accentMap: Record<string, string> = {
+    emerald: "bg-[#10B981]/10 text-[#10B981]",
+    violet: "bg-[#9333EA]/10 text-[#9333EA]",
+    amber: "bg-[#F59E0B]/10 text-[#F59E0B]",
+    blue: "bg-[#3B82F6]/10 text-[#3B82F6]",
   };
 
   const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
       <Card hover className="p-5">
         <div className="flex items-start justify-between mb-3">
-          <div className={`p-2.5 rounded-xl bg-${accentColor}-500/10 text-${accentColor}-400`}>
-            {icon}
-          </div>
+          <div className={`p-2.5 rounded-xl ${accentMap[accentColor] || accentMap.emerald}`}>{icon}</div>
           {trend && trendValue && (
             <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium ${trendColors[trend]}`}>
-              <TrendIcon className="w-3 h-3" />
-              {trendValue}
+              <TrendIcon className="w-3 h-3" />{trendValue}
             </div>
           )}
         </div>
         <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
-        <p className="text-sm text-gray-400 mt-0.5">{title}</p>
-        {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+        <p className="text-sm text-[#94A3B8] mt-0.5">{title}</p>
+        {subtitle && <p className="text-xs text-[#64748B] mt-1">{subtitle}</p>}
       </Card>
     </motion.div>
   );

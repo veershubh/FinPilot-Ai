@@ -1,7 +1,3 @@
-/**
- * FinPilot AI - Reusable Card Component
- */
-
 import React from "react";
 
 interface CardProps {
@@ -14,9 +10,8 @@ export function Card({ children, className = "", hover = false }: CardProps) {
   return (
     <div
       className={`
-        rounded-2xl border border-white/[0.06] bg-white/[0.03]
-        backdrop-blur-xl shadow-lg
-        ${hover ? "transition-all duration-300 hover:border-white/[0.12] hover:bg-white/[0.05] hover:shadow-xl hover:-translate-y-0.5" : ""}
+        rounded-2xl border border-[#1F2937] bg-[#111827]
+        ${hover ? "transition-all duration-300 hover:border-[#374151] hover:bg-[#162033] hover:-translate-y-0.5 hover:shadow-lg" : ""}
         ${className}
       `}
     >
