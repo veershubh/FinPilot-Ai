@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Navbar from '@/components/layout/Navbar';
+import { PageWrapper } from '@/components/layout/PageWrapper';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -17,9 +19,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark bg-gradient-primary min-h-screen">
       <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
+        <Navbar />
+        <PageWrapper title="FinPilot AI">
+          {children}
+        </PageWrapper>
       </body>
     </html>
   );

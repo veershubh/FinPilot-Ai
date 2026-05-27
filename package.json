@@ -1,0 +1,24 @@
+{
+  "name": "finpilot-ai-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "python -m uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.40.0",
+    "lucide-react": "^1.16.0",
+    "recharts": "^3.8.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@headlessui/react": "^1.7.19",
+    "@prisma/client": "^5.0.0",
+    "@types/node": "^20",
+    "dotenv": "^16.4.5",
+    "typescript": "^6.0.3"
+  }
+}

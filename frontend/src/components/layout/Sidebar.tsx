@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import {
   LayoutDashboard, Calculator, Wallet, BarChart3,
   MessageSquare, TrendingUp, Settings, LogOut,
@@ -18,6 +19,13 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  };
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[260px] bg-[#0B1020] border-r border-[#1F2937] flex flex-col z-50">
@@ -78,13 +86,14 @@ export function Sidebar() {
           <Settings className="w-[18px] h-[18px]" />
           Settings
         </Link>
-        <Link
-          href="/"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#94A3B8] hover:text-red-400 hover:bg-red-500/5 transition-colors"
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#94A3B8] hover:text-red-400 hover:bg-red-500/5 transition-colors"
         >
           <LogOut className="w-[18px] h-[18px]" />
           Log Out
-        </Link>
+        </button>
       </div>
     </aside>
   );

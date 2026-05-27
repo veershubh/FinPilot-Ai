@@ -1,39 +1,61 @@
-import Link from "next/link";
-import { TrendingUp } from "lucide-react";
+import React from "react";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col bg-[#050816]">
-      {/* Top bar */}
-      <header className="h-16 px-6 flex items-center justify-between border-b border-[#1F2937]/30 bg-[#050816]">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#10B981] flex items-center justify-center">
-            <TrendingUp className="w-4 h-4 text-[#050816]" />
+    <div className="flex min-h-screen">
+      {/* Left side – Marketing */}
+      <div className="hidden lg:flex flex-1 flex-col justify-center px-12 xl:px-20 relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute top-20 right-20 w-[300px] h-[300px] bg-[#10B981]/5 rounded-full blur-[100px] pointer-events-none" />
+        <h2 className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4">
+          Master your{' '}
+          <br />
+          wealth with{' '}
+          <span className="text-[#10B981]">AI-driven</span>{' '}
+          precision.
+        </h2>
+        <p className="text-[#94A3B8] max-w-md leading-relaxed mb-12">
+          Join 50,000+ investors using FinPilot to automate their financial growth and secure their future.
+        </p>
+        {/* Floating cards */}
+        <div className="relative">
+          <div className="rounded-xl border border-[#1F2937] bg-[#111827] p-4 w-48 animate-float">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-[#94A3B8]">Budget Score</p>
+              <svg className="w-4 h-4 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <p className="text-3xl font-bold text-white">854</p>
+            <div className="mt-2 h-1.5 rounded-full bg-[#1F2937]">
+              <div className="h-full w-[85%] rounded-full bg-[#10B981]" />
+            </div>
           </div>
-          <span className="text-base font-bold text-[#10B981]">FinPilot AI</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <button className="p-2 rounded-lg text-[#64748B] hover:text-[#94A3B8] transition-colors">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" strokeWidth="1.5"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 16v-4m0-4h.01"/></svg>
-          </button>
-          <button className="p-2 rounded-lg text-[#64748B] hover:text-[#94A3B8] transition-colors">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          </button>
+          <div className="absolute top-8 left-52 rounded-xl border border-[#1F2937] bg-[#111827] p-4 w-72 animate-float-delay">
+            <p className="text-xs text-[#94A3B8] mb-2">Monthly Savings</p>
+            <div className="flex items-end gap-[6px] h-24">
+              {[30, 45, 35, 55, 50, 70, 65, 80].map((h, i) => (
+                <div key={i} className="flex-1 rounded-t bg-gradient-to-t from-[#10B981]/30 to-[#10B981]" style={{ height: `${h}%` }} />
+              ))}
+            </div>
+          </div>
+          <div className="absolute top-32 left-10 rounded-xl border border-[#10B981]/20 bg-[#10B981]/5 p-3 max-w-[250px] animate-float">
+            <div className="flex items-start gap-2">
+              <div className="w-6 h-6 rounded-full bg-[#10B981]/20 flex items-center justify-center shrink-0 mt-0.5">
+                <svg className="w-3 h-3 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#10B981] mb-0.5">AI Suggestion</p>
+                <p className="text-[11px] text-[#94A3B8] leading-relaxed">
+                  Shift &#8377;15,000 to &#39;Growth Fund&#39;. Predicted 4.2% yield increase.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </header>
-
-      {/* Content */}
-      <main className="flex-1 flex">{children}</main>
-
-      {/* Footer */}
-      <footer className="h-14 px-6 flex items-center justify-between border-t border-[#1F2937]/30 text-xs text-[#64748B]">
-        <p>&copy; {new Date().getFullYear()} FinPilot AI. Secure 256-bit AES Encryption.</p>
-        <div className="flex gap-6">
-          <Link href="#" className="hover:text-[#94A3B8] transition-colors">Privacy Policy</Link>
-          <Link href="#" className="hover:text-[#94A3B8] transition-colors">Terms of Service</Link>
-          <Link href="#" className="hover:text-[#94A3B8] transition-colors">Trust &amp; Security</Link>
-        </div>
-      </footer>
+      </div>
+      {/* Right side – Form/content */}
+      <div className="flex-1 flex items-center justify-center px-6 lg:px-12">
+        {children}
+      </div>
     </div>
   );
 }

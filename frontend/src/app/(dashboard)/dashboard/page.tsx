@@ -5,6 +5,7 @@ import { PageWrapper } from "@/components/layout/PageWrapper";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { HealthScoreGauge } from "@/components/dashboard/HealthScoreGauge";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { AIInsightsCard } from "@/components/dashboard/AIInsightsCard";
 import { Card } from "@/components/ui/Card";
 import { Wallet, TrendingUp, ShieldCheck, PiggyBank } from "lucide-react";
 
@@ -59,6 +60,29 @@ export default function DashboardPage() {
             Quick Actions
           </h3>
           <QuickActions />
+          {/* AI Insight Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <AIInsightsCard
+              type="spending"
+              payload={{ /* TODO: fetch user spending data */ }}
+              title="Spending Analysis"
+            />
+            <AIInsightsCard
+              type="savings"
+              payload={{ /* TODO: provide income/expenses data */ }}
+              title="Savings Prediction"
+            />
+            <AIInsightsCard
+              type="emi"
+              payload={{ /* TODO: EMI planner data */ }}
+              title="EMI Intelligence"
+            />
+            <AIInsightsCard
+              type="recommendations"
+              payload={{ /* TODO: user goals and transactions */ }}
+              title="Smart Recommendations"
+            />
+          </div>
         </div>
       </div>
 

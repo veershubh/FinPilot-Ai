@@ -13,7 +13,7 @@ const navLinks = [
   { label: "Intelligence", href: "/ai-chat" },
 ];
 
-export function Navbar() {
+export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 

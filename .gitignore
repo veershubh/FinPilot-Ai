@@ -1,0 +1,17 @@
+# Node.js / Next.js typical ignore patterns
+node_modules/
+.next/
+out/
+dist/
+.env
+.env.local
+.env.development
+.env.production
+.DS_Store
+*.log
+.tmp
+.vscode/
+.idea/
+.vscode
+# Generated files
+public/build/
