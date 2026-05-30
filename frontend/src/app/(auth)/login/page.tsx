@@ -30,7 +30,15 @@ export default function LoginPage() {
       if (profileError) throw profileError;
       router.replace(profile?.onboarding_completed ? '/dashboard' : '/onboarding');
     } catch (err) {
-      const error = err as Error;
+      const error = err as any;
+      // Provide clearer error messages based on Supabase error messages
+      if (error?.message?.includes('User not confirmed')) {
+        alert('Please verify your email before logging in. Check your inbox for the verification link.');
+      } else if (error?.message?.includes('Invalid login credentials')) {
+        alert('Invalid email or password. Please try again.');
+      } else {
+        alert(error?.message || 'An unexpected error occurred');
+      }
       alert(error.message);
     } finally {
       setLoading(false);

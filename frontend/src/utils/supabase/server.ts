@@ -4,29 +4,36 @@
  * Server‑side Supabase client wrapper for Next.js 16 app router.
  * Uses cookies from the incoming request to forward the JWT token.
  */
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export const getServerSupabase = async () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  console.log("[Supabase Server] URL exists:", !!supabaseUrl);
+  console.log("[Supabase Server] Key exists:", !!supabaseAnonKey);
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error("[Supabase Server] Missing environment variables");
+    throw new Error("Supabase environment variables are missing.");
+  }
+
   const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // Server component context without a cookie store – ignore.
-          }
-        },
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
       },
-    }
-  );
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          );
+        } catch {
+          // Server component context without a cookie store – ignore.
+        }
+      },
+    },
+  });
 };

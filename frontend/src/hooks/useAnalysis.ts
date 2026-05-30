@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import type { PurchaseAnalysisRequest, PurchaseAnalysisResponse } from "@/types";
-import { analyzePurchase } from "@/services/api";
+import { analyzeEMI } from "@/actions/emi";
 
 export function useAnalysis() {
   const [result, setResult] = useState<PurchaseAnalysisResponse | null>(null);
@@ -21,7 +21,21 @@ export function useAnalysis() {
     setResult(null);
 
     try {
-      const response = await analyzePurchase(data);
+      
+    // Build prompt for AI analysis
+    const prompt = `
+    Loan Amount: ${data.product_price}
+    Interest Rate: ${data.interest_rate}%
+    Tenure (months): ${data.emi_months}
+    Monthly Income: ${data.monthly_income}
+    Monthly Expenses: ${data.monthly_expenses}
+    Current Savings: ${data.current_savings}
+    Emergency Fund: ${data.emergency_fund}
+    `;
+    console.log("Calling analyzeEMI...");
+    console.log("Prompt:", prompt);
+    const response = await analyzeEMI(prompt);
+
       setResult(response);
     } catch (err) {
       setError(

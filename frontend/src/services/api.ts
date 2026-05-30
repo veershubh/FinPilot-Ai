@@ -47,13 +47,13 @@ export async function checkHealth() {
 }
 
 /**
- * Analyze a purchase — EMI vs Full Payment decision.
+ * Deprecated: Analyze a purchase via backend. Use client-side analyzeEMI instead.
  */
-export async function analyzePurchase(
-  data: PurchaseAnalysisRequest
-): Promise<PurchaseAnalysisResponse> {
-  return apiRequest<PurchaseAnalysisResponse>("/api/v1/analyze-purchase", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
+// export async function analyzePurchase(
+//   data: PurchaseAnalysisRequest
+// ): Promise<PurchaseAnalysisResponse> {
+//   return apiRequest<PurchaseAnalysisResponse>("/api/v1/analyze-purchase", {
+//     method: "POST",
+//     body: JSON.stringify(data),
+//   });
+// }
