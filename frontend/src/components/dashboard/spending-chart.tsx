@@ -10,7 +10,7 @@ import { getDashboardOverview } from '@/lib/dashboard';
  */
 export async function SpendingChart() {
   const supabase = getSupabase();
-  const { data: user } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   const userId = user?.id ?? '';
   const overview = await getDashboardOverview(userId);
   const transactions = overview.transactions;
@@ -42,9 +42,15 @@ export async function SpendingChart() {
   );
 }
 
+interface Transaction {
+  type: string;
+  transaction_date: string;
+  amount: number;
+}
+
 /** Aggregate transactions into weekly totals */
-function aggregateWeekly(transactions) {
-  const weeks = {};
+function aggregateWeekly(transactions: Transaction[]) {
+  const weeks: Record<string, number> = {};
   transactions.forEach(tx => {
     if (tx.type !== 'expense') return;
     const date = new Date(tx.transaction_date);
@@ -58,8 +64,8 @@ function aggregateWeekly(transactions) {
 }
 
 /** Aggregate transactions into monthly totals */
-function aggregateMonthly(transactions) {
-  const months = {};
+function aggregateMonthly(transactions: Transaction[]) {
+  const months: Record<string, number> = {};
   transactions.forEach(tx => {
     if (tx.type !== 'expense') return;
     const date = new Date(tx.transaction_date);
@@ -70,10 +76,10 @@ function aggregateMonthly(transactions) {
 }
 
 /** Calculate ISO week number */
-function getISOWeek(date) {
+function getISOWeek(date: Date) {
   const tmp = new Date(date.getTime());
   tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
   const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7);
+  const weekNo = Math.ceil(((tmp.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   return weekNo;
 }

@@ -1,13 +1,7 @@
 // src/lib/queries/emi_planner.ts
 
 import { getSupabase } from '@/lib/supabaseClient';
-import type { EmiPlanner, EmiPlannerInsert, EmiPlannerUpdate } from '@/types/database';
-
-export const getSupabase = () =>
-  createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+import type { EMIPlan, EMIPlanInsert, EMIPlanUpdate } from '@/types/database';
 
 export const fetchEmiPlans = async (userId: string) => {
   const supabase = getSupabase();
@@ -16,17 +10,17 @@ export const fetchEmiPlans = async (userId: string) => {
     .select('*')
     .eq('user_id', userId);
   if (error) throw error;
-  return data as EmiPlanner[];
+  return data as EMIPlan[];
 };
 
-export const insertEmiPlan = async (plan: EmiPlannerInsert) => {
+export const insertEmiPlan = async (plan: EMIPlanInsert) => {
   const supabase = getSupabase();
   const { data, error } = await supabase.from('emi_planner').insert(plan).select();
   if (error) throw error;
-  return data[0] as EmiPlanner;
+  return data[0] as EMIPlan;
 };
 
-export const updateEmiPlan = async (id: number, updates: EmiPlannerUpdate) => {
+export const updateEmiPlan = async (id: number, updates: EMIPlanUpdate) => {
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('emi_planner')
@@ -34,7 +28,7 @@ export const updateEmiPlan = async (id: number, updates: EmiPlannerUpdate) => {
     .eq('id', id)
     .select();
   if (error) throw error;
-  return data[0] as EmiPlanner;
+  return data[0] as EMIPlan;
 };
 
 export const deleteEmiPlan = async (id: number) => {

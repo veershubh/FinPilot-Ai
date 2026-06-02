@@ -64,7 +64,7 @@ function OverviewCard({ title, value, trend, trendValue, icon, color = 'text-[#1
 export async function OverviewCards() {
   // Fetch real data server‑side
 const supabase = getSupabase();
-const { data: user } = await supabase.auth.getUser();
+const { data: { user } } = await supabase.auth.getUser();
 const userId = user?.id ?? '';
 const overview = await getDashboardOverview(userId);
 const data: CardProps[] = [

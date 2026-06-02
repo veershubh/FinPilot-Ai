@@ -9,9 +9,9 @@ import type {
 const now = new Date().toISOString();
 
 const baseBudgets: Omit<Budget, "user_id">[] = [
-  { id: "budget-1", category: "Groceries", monthly_limit: 12000, period: "monthly", created_at: now },
-  { id: "budget-2", category: "Transportation", monthly_limit: 4500, period: "monthly", created_at: now },
-  { id: "budget-3", category: "Entertainment", monthly_limit: 5000, period: "monthly", created_at: now },
+  { id: "budget-1", category: "Groceries", monthly_limit: 12000, spent_amount: 0, period: "monthly", created_at: now },
+  { id: "budget-2", category: "Transportation", monthly_limit: 4500, spent_amount: 0, period: "monthly", created_at: now },
+  { id: "budget-3", category: "Entertainment", monthly_limit: 5000, spent_amount: 0, period: "monthly", created_at: now },
 ];
 
 const baseExpenses: Omit<Expense, "user_id">[] = [
@@ -21,14 +21,14 @@ const baseExpenses: Omit<Expense, "user_id">[] = [
 ];
 
 const baseGoals: Omit<Goal, "user_id">[] = [
-  { id: "goal-1", title: "Emergency Fund", target_amount: 150000, current_amount: 68000, target_date: "2026-12-31", created_at: now },
-  { id: "goal-2", title: "Vacation Fund", target_amount: 50000, current_amount: 18000, target_date: "2026-06-30", created_at: now },
+  { id: "goal-1", title: "Emergency Fund", target_amount: 150000, current_amount: 68000, target_date: "2026-12-31", status: "in_progress", created_at: now },
+  { id: "goal-2", title: "Vacation Fund", target_amount: 50000, current_amount: 18000, target_date: "2026-06-30", status: "in_progress", created_at: now },
 ];
 
 const baseTransactions: Omit<Transaction, "user_id">[] = [
-  { id: "txn-1", transaction_type: "expense", amount: 1299, description: "Grocery run", category: "Groceries", transaction_date: now, created_at: now },
-  { id: "txn-2", transaction_type: "income", amount: 50000, description: "Salary deposit", category: "Income", transaction_date: now, created_at: now },
-  { id: "txn-3", transaction_type: "expense", amount: 899, description: "Utility bill", category: "Bills & Utilities", transaction_date: now, created_at: now },
+  { id: "txn-1", type: "expense", amount: 1299, description: "Grocery run", category: "Groceries", transaction_date: now, created_at: now },
+  { id: "txn-2", type: "income", amount: 50000, description: "Salary deposit", category: "Income", transaction_date: now, created_at: now },
+  { id: "txn-3", type: "expense", amount: 899, description: "Utility bill", category: "Bills & Utilities", transaction_date: now, created_at: now },
 ];
 
 const baseEmiPlans: Omit<EMIPlan, "user_id">[] = [
