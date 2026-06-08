@@ -8,6 +8,9 @@ import type {
   BudgetUpdate,
   SubscriptionInsert,
   SubscriptionUpdate,
+  CommitmentInsert,
+  CommitmentUpdate,
+  CommitmentPaymentInsert,
 } from '@/types/database';
 
 /** Optimistic UI helper – simply returns the optimistic result and updates the cache if you use a cache library. */
@@ -103,4 +106,55 @@ export const deleteSubscription = async (id: string) => {
   const { error } = await supabase.from('subscriptions').delete().eq('id', id);
   if (error) throw error;
   return true;
+};
+
+// Commitments
+export const createCommitment = async (commitment: CommitmentInsert) => {
+  const supabase = getSupabase();
+  // Auto-calculate tracking fields
+  const startDate = new Date(commitment.start_date);
+  const endDate = commitment.end_date ? new Date(commitment.end_date) : null;
+  const totalMonths = endDate
+    ? Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30)))
+    : 0;
+
+  const payload = {
+    ...commitment,
+    outstanding_balance: commitment.original_amount ?? 0,
+    progress_percentage: 0,
+    months_completed: 0,
+    months_remaining: totalMonths,
+    next_due_date: commitment.start_date,
+    status: 'active',
+  };
+
+  const { data, error } = await supabase.from('commitments').insert(payload as any).select();
+  if (error) throw error;
+  return data[0];
+};
+
+export const updateCommitmentMut = async (id: string, updates: CommitmentUpdate) => {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('commitments')
+    .update({ ...updates, updated_at: new Date().toISOString() } as any)
+    .eq('id', id)
+    .select();
+  if (error) throw error;
+  return data[0];
+};
+
+export const deleteCommitmentMut = async (id: string) => {
+  const supabase = getSupabase();
+  const { error } = await supabase.from('commitments').delete().eq('id', id);
+  if (error) throw error;
+  return true;
+};
+
+// Commitment Payments
+export const addCommitmentPayment = async (payment: CommitmentPaymentInsert) => {
+  const supabase = getSupabase();
+  const { data, error } = await supabase.from('commitment_payments').insert(payment as any).select();
+  if (error) throw error;
+  return data[0];
 };

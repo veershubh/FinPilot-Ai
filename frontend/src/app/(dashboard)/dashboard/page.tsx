@@ -4,6 +4,7 @@ import React from "react";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { HealthScoreGauge } from "@/components/dashboard/HealthScoreGauge";
+import { CommitmentDashboardWidget } from "@/components/dashboard/CommitmentDashboardWidget";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AIInsightsCard } from "@/components/dashboard/AIInsightsCard";
 import { Card } from "@/components/ui/Card";
@@ -46,7 +47,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Health Score + Quick Actions */}
+      {/* Health Score + Commitments + Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <Card className="flex flex-col items-center justify-center py-8">
           <HealthScoreGauge score={75} size={180} />
@@ -55,35 +56,23 @@ export default function DashboardPage() {
           </p>
         </Card>
 
-        <div className="lg:col-span-2">
-          <h3 className="text-sm font-semibold text-[#94A3B8] uppercase tracking-wider mb-4">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Commitment Widget */}
+          <CommitmentDashboardWidget />
+
+          <h3 className="text-sm font-semibold text-[#94A3B8] uppercase tracking-wider">
             Quick Actions
           </h3>
           <QuickActions />
-          {/* AI Insight Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            <AIInsightsCard
-              type="spending"
-              payload={{ /* TODO: fetch user spending data */ }}
-              title="Spending Analysis"
-            />
-            <AIInsightsCard
-              type="savings"
-              payload={{ /* TODO: provide income/expenses data */ }}
-              title="Savings Prediction"
-            />
-            <AIInsightsCard
-              type="emi"
-              payload={{ /* TODO: EMI planner data */ }}
-              title="EMI Intelligence"
-            />
-            <AIInsightsCard
-              type="recommendations"
-              payload={{ /* TODO: user goals and transactions */ }}
-              title="Smart Recommendations"
-            />
-          </div>
         </div>
+      </div>
+
+      {/* AI Insights */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <AIInsightsCard type="spending" payload={{}} title="Spending Analysis" />
+        <AIInsightsCard type="savings" payload={{}} title="Savings Prediction" />
+        <AIInsightsCard type="emi" payload={{}} title="EMI Intelligence" />
+        <AIInsightsCard type="recommendations" payload={{}} title="Smart Recommendations" />
       </div>
 
       {/* Recent Activity */}

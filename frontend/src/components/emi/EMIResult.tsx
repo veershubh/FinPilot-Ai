@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, AlertTriangle, XCircle, Lightbulb, TrendingUp, ArrowRight } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Lightbulb, TrendingUp, ArrowRight, BookmarkPlus, RotateCcw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { HealthScoreGauge } from "@/components/dashboard/HealthScoreGauge";
 import { formatCurrency, formatPercent } from "@/utils/formatters";
@@ -10,9 +10,11 @@ import type { PurchaseAnalysisResponse } from "@/types";
 
 interface EMIResultProps {
   result: PurchaseAnalysisResponse;
+  onProceedAsCommitment?: () => void;
+  onReset?: () => void;
 }
 
-export function EMIResult({ result }: EMIResultProps) {
+export function EMIResult({ result, onProceedAsCommitment, onReset }: EMIResultProps) {
   const getRecIcon = (rec: string) => {
     if (rec.includes("Full Payment")) return <CheckCircle2 className="w-5 h-5" />;
     if (rec.includes("EMI")) return <TrendingUp className="w-5 h-5" />;
@@ -123,6 +125,42 @@ export function EMIResult({ result }: EMIResultProps) {
             ))}
           </ul>
         </Card>
+      )}
+
+      {/* CTA Buttons */}
+      {(onProceedAsCommitment || onReset) && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+          className="flex flex-col sm:flex-row gap-3 pt-2"
+        >
+          {onProceedAsCommitment && (
+            <button
+              onClick={onProceedAsCommitment}
+              className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm
+                bg-gradient-to-r from-[#10B981] to-[#3B82F6] text-white
+                hover:from-[#0EA572] hover:to-[#2563EB] transition-all duration-200
+                shadow-lg shadow-[#10B981]/20 hover:shadow-[#10B981]/30
+                hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <BookmarkPlus className="w-4.5 h-4.5" />
+              Track as Commitment
+            </button>
+          )}
+          {onReset && (
+            <button
+              onClick={onReset}
+              className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm
+                bg-[#111827] text-[#94A3B8] border border-[#1F2937]
+                hover:bg-[#162033] hover:text-white hover:border-[#3B82F6]/30 transition-all duration-200
+                hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Analyze Another
+            </button>
+          )}
+        </motion.div>
       )}
     </motion.div>
   );

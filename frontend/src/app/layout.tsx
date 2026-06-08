@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from '@/components/layout/Navbar';
 import { PageWrapper } from '@/components/layout/PageWrapper';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -25,6 +26,7 @@ export default function RootLayout({
         <PageWrapper title="FinPilot AI">
           {children}
         </PageWrapper>
+        <Toaster theme="dark" position="top-right" richColors closeButton />
       </body>
     </html>
   );

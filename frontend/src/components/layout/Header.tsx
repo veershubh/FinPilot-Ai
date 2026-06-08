@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 export function Header() {
   return (
@@ -18,10 +19,7 @@ export function Header() {
 
       {/* Right */}
       <div className="flex items-center gap-4">
-        <button className="relative p-2 rounded-xl hover:bg-white/[0.04] transition-colors text-[#94A3B8] hover:text-white">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#10B981]" />
-        </button>
+        <NotificationBell />
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center text-xs font-bold text-[#050816]">
           U
         </div>

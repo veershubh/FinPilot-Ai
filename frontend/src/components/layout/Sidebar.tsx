@@ -11,10 +11,11 @@ import {
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "EMI Analyzer", href: "/emi-analyzer", icon: Calculator },
-  { label: "Budget Planner", href: "/budget-planner", icon: Wallet },
-  { label: "Insights", href: "/insights", icon: BarChart3 },
-  { label: "AI Chat", href: "/ai-chat", icon: MessageSquare },
+  { label: "Assets", href: "/assets", icon: Wallet },
+  { label: "Liabilities", href: "/liabilities", icon: BarChart3 },
+  { label: "Commitments", href: "/commitments", icon: TrendingUp },
+  { label: "Strategy", href: "/strategy", icon: Calculator },
+  { label: "AI Assistant", href: "/ai-assistant", icon: MessageSquare },
 ];
 
 export function Sidebar() {
