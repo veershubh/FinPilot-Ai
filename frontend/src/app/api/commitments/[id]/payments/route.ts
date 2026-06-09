@@ -1,12 +1,12 @@
 // src/app/api/commitments/[id]/payments/route.ts
 import { NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabaseClient";
+import { getServerSupabase } from "@/utils/supabase/server";
 import { notifyPaymentRecorded } from "@/lib/notifications";
 import type { CommitmentPayment, Commitment } from "@/types/database";
 
 /** Extract authenticated user ID */
 async function getUserId(): Promise<string | null> {
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase.auth.getUser();
   if (error) return null;
   return data?.user?.id ?? null;
@@ -27,7 +27,7 @@ export async function GET(
   }
 
   const { id } = await params;
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
 
   const { data, error } = await supabase
     .from("commitment_payments")
@@ -72,7 +72,7 @@ export async function POST(
     );
   }
 
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
 
   // ── Step 1: Fetch commitment ──────────────────────────────────────────────
   const { data: commitment, error: fetchErr } = await supabase

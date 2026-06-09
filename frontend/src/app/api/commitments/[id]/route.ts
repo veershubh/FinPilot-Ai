@@ -1,6 +1,6 @@
 // src/app/api/commitments/[id]/route.ts
 import { NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabaseClient";
+import { getServerSupabase } from "@/utils/supabase/server";
 import type {
   Commitment,
   CommitmentPayment,
@@ -10,7 +10,7 @@ import type {
 
 /** Extract authenticated user ID */
 async function getUserId(): Promise<string | null> {
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase.auth.getUser();
   if (error) return null;
   return data?.user?.id ?? null;
@@ -31,7 +31,7 @@ export async function GET(
   }
 
   const { id } = await params;
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
 
   // Parallel fetch: commitment + payments + insights
   const [commitmentRes, paymentsRes, insightsRes] = await Promise.all([
@@ -78,7 +78,7 @@ export async function PUT(
 
   const { id } = await params;
   const updates: CommitmentUpdate = await request.json();
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
 
   const { data, error } = await supabase
     .from("commitments")
@@ -110,7 +110,7 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
 
   const { error } = await supabase
     .from("commitments")
