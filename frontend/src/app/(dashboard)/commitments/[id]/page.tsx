@@ -9,11 +9,15 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useCommitmentDetail } from "@/hooks/useCommitments";
 import RecordPaymentModal from "@/components/commitments/RecordPaymentModal";
+import PrepaymentModal from "@/components/commitments/PrepaymentModal";
+import { LOAN_CATEGORIES } from "@/types/commitments";
+import type { CommitmentCategory } from "@/types/commitments";
 import {
   ArrowLeft,
   Banknote,
   Calendar,
   TrendingUp,
+  TrendingDown,
   Clock,
   CreditCard,
   FileText,
@@ -48,6 +52,7 @@ export default function CommitmentDetailPage() {
   const id = params?.id as string;
   const { detail, loading, error, refresh } = useCommitmentDetail(id);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPrepayModal, setShowPrepayModal] = useState(false);
 
   if (loading) {
     return (
@@ -76,6 +81,13 @@ export default function CommitmentDetailPage() {
   }
 
   const { commitment, payments, insights } = detail;
+  const isLoan = LOAN_CATEGORIES.includes(commitment.category as CommitmentCategory);
+  const isActive = commitment.status !== "completed" && commitment.status !== "closed_early";
+
+  // Calculate total prepayments from payment history (payment_mode === 'prepayment')
+  const prepayments = payments.filter((p) => p.payment_mode === "prepayment");
+  const totalPrepaid = prepayments.reduce((sum, p) => sum + p.amount, 0);
+
   const formatDate = (d: string | null) =>
     d
       ? new Date(d).toLocaleDateString("en-IN", {
@@ -85,8 +97,7 @@ export default function CommitmentDetailPage() {
         })
       : "—";
 
-  const formatCurrency = (n: number) =>
-    `₹${n.toLocaleString("en-IN")}`;
+  const formatCurrency = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
   return (
     <PageWrapper
@@ -110,21 +121,34 @@ export default function CommitmentDetailPage() {
       </div>
 
       {/* Status + Actions Row */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <Badge
           className={`${statusStyles[commitment.status] ?? statusStyles.active} border px-3 py-1`}
         >
           {statusLabels[commitment.status] ?? commitment.status}
         </Badge>
-        {commitment.status !== "completed" && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowPaymentModal(true)}
-          >
-            <Banknote className="w-4 h-4" />
-            Record Payment
-          </Button>
+        {isActive && (
+          <div className="flex gap-2">
+            {isLoan && commitment.outstanding_balance > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPrepayModal(true)}
+                className="border border-[#8B5CF6]/20 text-[#8B5CF6] hover:bg-[#8B5CF6]/10"
+              >
+                <TrendingDown className="w-4 h-4" />
+                Reduce Loan
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setShowPaymentModal(true)}
+            >
+              <Banknote className="w-4 h-4" />
+              Record Payment
+            </Button>
+          </div>
         )}
       </div>
 
@@ -179,6 +203,34 @@ export default function CommitmentDetailPage() {
         })}
       </div>
 
+      {/* Loan Summary (for loan categories with prepayments) */}
+      {isLoan && totalPrepaid > 0 && (
+        <Card className="p-6 mb-8 border-[#8B5CF6]/20 bg-gradient-to-br from-[#8B5CF6]/5 to-transparent">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingDown className="w-5 h-5 text-[#8B5CF6]" />
+            <h3 className="text-sm font-semibold text-white">Loan Prepayment Summary</h3>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-xs text-[#64748B]">Original Loan</p>
+              <p className="text-lg font-bold text-white">{formatCurrency(commitment.original_amount)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-[#64748B]">Current Balance</p>
+              <p className="text-lg font-bold text-[#F59E0B]">{formatCurrency(commitment.outstanding_balance)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-[#64748B]">Total Prepayments</p>
+              <p className="text-lg font-bold text-[#8B5CF6]">{formatCurrency(totalPrepaid)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-[#64748B]">Remaining Tenure</p>
+              <p className="text-lg font-bold text-white">{commitment.months_remaining} months</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Progress + Timeline Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Progress Card */}
@@ -199,12 +251,8 @@ export default function CommitmentDetailPage() {
             />
           </div>
           <div className="flex justify-between text-sm text-[#64748B]">
-            <span>
-              {commitment.months_completed} months paid
-            </span>
-            <span>
-              {commitment.months_remaining} months left
-            </span>
+            <span>{commitment.months_completed} months paid</span>
+            <span>{commitment.months_remaining} months left</span>
           </div>
         </Card>
 
@@ -254,33 +302,53 @@ export default function CommitmentDetailPage() {
           </p>
         ) : (
           <div className="space-y-3">
-            {payments.map((payment, i) => (
-              <motion.div
-                key={payment.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="flex items-center justify-between p-3 rounded-xl bg-[#0F172A] border border-[#1F2937]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center">
-                    <Banknote className="w-4 h-4 text-[#10B981]" />
+            {payments.map((payment, i) => {
+              const isPrepay = payment.payment_mode === "prepayment";
+              return (
+                <motion.div
+                  key={payment.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`flex items-center justify-between p-3 rounded-xl border ${
+                    isPrepay
+                      ? "bg-[#8B5CF6]/5 border-[#8B5CF6]/20"
+                      : "bg-[#0F172A] border-[#1F2937]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        isPrepay ? "bg-[#8B5CF6]/10" : "bg-[#10B981]/10"
+                      }`}
+                    >
+                      {isPrepay ? (
+                        <TrendingDown className="w-4 h-4 text-[#8B5CF6]" />
+                      ) : (
+                        <Banknote className="w-4 h-4 text-[#10B981]" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        {formatCurrency(payment.amount)}
+                        {isPrepay && (
+                          <span className="ml-2 text-xs text-[#8B5CF6]">
+                            Prepayment
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-[#64748B]">
+                        {payment.payment_mode ?? "—"}{" "}
+                        {payment.notes ? `· ${payment.notes}` : ""}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">
-                      {formatCurrency(payment.amount)}
-                    </p>
-                    <p className="text-xs text-[#64748B]">
-                      {payment.payment_mode ?? "—"}{" "}
-                      {payment.notes ? `· ${payment.notes}` : ""}
-                    </p>
-                  </div>
-                </div>
-                <p className="text-xs text-[#64748B]">
-                  {formatDate(payment.paid_date)}
-                </p>
-              </motion.div>
-            ))}
+                  <p className="text-xs text-[#64748B]">
+                    {formatDate(payment.paid_date)}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </Card>
@@ -352,12 +420,19 @@ export default function CommitmentDetailPage() {
         </Card>
       )}
 
-      {/* Payment Modal */}
+      {/* Modals */}
       <AnimatePresence>
         {showPaymentModal && (
           <RecordPaymentModal
             commitment={commitment}
             onClose={() => setShowPaymentModal(false)}
+            onSuccess={refresh}
+          />
+        )}
+        {showPrepayModal && (
+          <PrepaymentModal
+            commitment={commitment}
+            onClose={() => setShowPrepayModal(false)}
             onSuccess={refresh}
           />
         )}

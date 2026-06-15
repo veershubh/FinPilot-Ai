@@ -124,3 +124,27 @@ export interface CommitmentNotification {
   is_read: boolean;
   created_at: string;
 }
+
+/** Prepayment / principal reduction entity */
+export interface CommitmentPrepayment {
+  id: string;
+  commitment_id: string;
+  user_id: string;
+  amount: number;
+  interest_saved: number;
+  months_reduced: number;
+  new_outstanding: number;
+  new_tenure_months: number;
+  created_at: string;
+}
+
+/** Loan categories that support prepayment */
+export const LOAN_CATEGORIES: CommitmentCategory[] = [
+  'vehicle_loan',
+  'home_loan',
+  'education_loan',
+  'personal_loan',
+  'phone_emi',
+  'laptop_emi',
+  'credit_card_emi',
+];

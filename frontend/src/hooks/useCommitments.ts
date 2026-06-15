@@ -183,3 +183,20 @@ export async function recordPaymentAPI(
   }
   return res.json();
 }
+
+/** Make a prepayment (principal reduction) via API */
+export async function prepayCommitmentAPI(
+  commitmentId: string,
+  amount: number
+): Promise<any> {
+  const res = await fetch(`/api/commitments/${commitmentId}/prepay`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error ?? "Failed to process prepayment");
+  }
+  return res.json();
+}

@@ -146,7 +146,7 @@ export default function AddCommitmentFlow({
       });
       onSuccess?.();
       onClose();
-      router.push("/dashboard/commitments");
+      router.push("/commitments");
     } catch (err: any) {
       console.error("[AddCommitmentFlow] Creation failed:", err);
       const msg = err.message || "Failed to create commitment";
