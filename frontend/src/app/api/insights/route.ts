@@ -2,6 +2,14 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import { streamInsight } from '@/lib/ai';
 
+/** GET /api/insights — not supported, insights use POST with SSE streaming */
+export async function GET() {
+  return NextResponse.json(
+    { error: "Use POST to generate insights. GET is not supported.", methods: ["POST"] },
+    { status: 405, headers: { Allow: "POST" } }
+  );
+}
+
 /** Helper to get Supabase client and authenticated user ID */
 async function getAuth(request: Request) {
   const supabase = createServerClient(

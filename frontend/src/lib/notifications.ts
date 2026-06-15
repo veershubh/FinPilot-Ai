@@ -1,7 +1,7 @@
 // src/lib/notifications.ts
 "use server";
 
-import { getSupabase } from "@/lib/supabaseClient";
+import { getServerSupabase } from "@/utils/supabase/server";
 
 export type NotificationType =
   | "payment_due"
@@ -15,18 +15,16 @@ interface CreateNotificationInput {
   userId: string;
   commitmentId: string;
   type: NotificationType;
-  title: string;
   message: string;
 }
 
 /** Insert a notification into commitment_notifications */
 export async function createNotification(input: CreateNotificationInput) {
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase.from("commitment_notifications").insert({
     user_id: input.userId,
     commitment_id: input.commitmentId,
     type: input.type,
-    title: input.title,
     message: input.message,
     is_read: false,
   } as any);
@@ -35,7 +33,7 @@ export async function createNotification(input: CreateNotificationInput) {
 
 /** Fetch unread notifications for a user */
 export async function getUnreadNotifications(userId: string) {
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("commitment_notifications")
     .select("*")
@@ -49,7 +47,7 @@ export async function getUnreadNotifications(userId: string) {
 
 /** Mark notifications as read */
 export async function markNotificationsRead(ids: string[]) {
-  const supabase = getSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase
     .from("commitment_notifications")
     .update({ is_read: true } as any)
@@ -69,12 +67,9 @@ export async function notifyPaymentRecorded(
     userId,
     commitmentId,
     type: isCompleted ? "commitment_completed" : "payment_recorded",
-    title: isCompleted
-      ? `🎉 ${commitmentTitle} — Completed!`
-      : `✅ Payment Recorded`,
     message: isCompleted
-      ? `Congratulations! You've fully paid off "${commitmentTitle}".`
-      : `₹${amount.toLocaleString("en-IN")} paid towards "${commitmentTitle}".`,
+      ? `🎉 ${commitmentTitle} — Completed! Congratulations, you've fully paid it off.`
+      : `✅ Payment Recorded — ₹${amount.toLocaleString("en-IN")} paid towards "${commitmentTitle}".`,
   });
 }
 
@@ -89,7 +84,6 @@ export async function notifyPaymentOverdue(
     userId,
     commitmentId,
     type: "payment_overdue",
-    title: `⚠️ Overdue: ${commitmentTitle}`,
-    message: `Payment for "${commitmentTitle}" was due on ${new Date(dueDate).toLocaleDateString("en-IN")}. Please pay soon to avoid penalties.`,
+    message: `⚠️ Overdue: ${commitmentTitle} — Payment was due on ${new Date(dueDate).toLocaleDateString("en-IN")}. Please pay soon to avoid penalties.`,
   });
 }
