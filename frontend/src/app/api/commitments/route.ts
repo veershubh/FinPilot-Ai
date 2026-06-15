@@ -1,23 +1,23 @@
 // src/app/api/commitments/route.ts
 import { NextResponse } from "next/server";
-import { getServerSupabase } from "@/utils/supabase/server";
+import { getRouteHandlerSupabase } from "@/utils/supabase/server";
 import { generateCommitmentInsight } from "@/lib/commitment-ai";
 import type { Commitment, CommitmentInsert } from "@/types/database";
 
-async function getUserId(): Promise<string | null> {
-  const supabase = await getServerSupabase();
+async function getUserId(request: Request): Promise<string | null> {
+  const supabase = getRouteHandlerSupabase(request);
   const { data, error } = await supabase.auth.getUser();
   if (error) return null;
   return data?.user?.id ?? null;
 }
 
 export async function GET(request: Request) {
-  const userId = await getUserId();
+  const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
   const isSummary = searchParams.get("summary") === "true";
-  const supabase = await getServerSupabase();
+  const supabase = getRouteHandlerSupabase(request);
 
   if (isSummary) {
     const { data, error } = await supabase
@@ -57,11 +57,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const userId = await getUserId();
+  const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
   const body = (await request.json()) as CommitmentInsert;
-  const supabase = await getServerSupabase();
+  const supabase = getRouteHandlerSupabase(request);
 
   const startDate = new Date(body.start_date);
   const endDate = body.end_date ? new Date(body.end_date) : null;

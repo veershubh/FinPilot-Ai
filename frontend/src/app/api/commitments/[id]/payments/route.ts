@@ -1,12 +1,12 @@
 // src/app/api/commitments/[id]/payments/route.ts
 import { NextResponse } from "next/server";
-import { getServerSupabase } from "@/utils/supabase/server";
+import { getRouteHandlerSupabase } from "@/utils/supabase/server";
 import { notifyPaymentRecorded } from "@/lib/notifications";
 import type { CommitmentPayment, Commitment } from "@/types/database";
 
 /** Extract authenticated user ID */
-async function getUserId(): Promise<string | null> {
-  const supabase = await getServerSupabase();
+async function getUserId(request: Request): Promise<string | null> {
+  const supabase = getRouteHandlerSupabase(request);
   const { data, error } = await supabase.auth.getUser();
   if (error) return null;
   return data?.user?.id ?? null;
@@ -21,13 +21,13 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getUserId();
+  const userId = await getUserId(request);
   if (!userId) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
 
   const { id } = await params;
-  const supabase = await getServerSupabase();
+  const supabase = getRouteHandlerSupabase(request);
 
   const { data, error } = await supabase
     .from("commitment_payments")
@@ -52,7 +52,7 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getUserId();
+  const userId = await getUserId(request);
   if (!userId) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
@@ -72,7 +72,7 @@ export async function POST(
     );
   }
 
-  const supabase = await getServerSupabase();
+  const supabase = getRouteHandlerSupabase(request);
 
   // ── Step 1: Fetch commitment ──────────────────────────────────────────────
   const { data: commitment, error: fetchErr } = await supabase

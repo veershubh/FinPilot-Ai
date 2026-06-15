@@ -1,11 +1,11 @@
 // src/app/api/timeline/route.ts
 import { NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabaseClient";
+import { getRouteHandlerSupabase } from "@/utils/supabase/server";
 import type { FinancialTimeline, FinancialTimelineInsert, FinancialTimelineUpdate } from "@/types/database";
 
 /** Helper to extract user id from request cookies (Supabase auth). */
 async function getUserId(request: Request): Promise<string | null> {
-  const supabase = getSupabase();
+  const supabase = getRouteHandlerSupabase(request);
   const { data, error } = await supabase.auth.getUser();
   if (error) return null;
   return data?.user?.id ?? null;
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
-  const supabase = getSupabase();
+  const supabase = getRouteHandlerSupabase(request);
   const { data, error } = await supabase
     .from("financial_timeline")
     .select("*")
@@ -33,14 +33,12 @@ export async function POST(request: Request) {
   const body = (await request.json()) as FinancialTimelineInsert;
   const item: FinancialTimelineInsert = { ...body, user_id: userId };
 
-  const supabase = getSupabase();
+  const supabase = getRouteHandlerSupabase(request);
   const { data, error } = await supabase.from("financial_timeline").insert(item).select();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json(data?.[0] as FinancialTimeline, { status: 201 });
 }
-
-// Optional: PUT and DELETE can be added similarly using URL params.
 
 export async function DELETE(request: Request) {
   const userId = await getUserId(request);
@@ -50,13 +48,14 @@ export async function DELETE(request: Request) {
   const { id } = body;
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  const supabase = getSupabase();
+  const supabase = getRouteHandlerSupabase(request);
   const { data, error } = await supabase.from("financial_timeline").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ success: true }, { status: 200 });
 }
-// Optional: PUT to update a timeline item
+
+// PUT to update a timeline item
 export async function PUT(request: Request) {
   const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
@@ -65,7 +64,7 @@ export async function PUT(request: Request) {
   const { id, updates } = body;
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-  const supabase = getSupabase();
+  const supabase = getRouteHandlerSupabase(request);
   const { data, error } = await supabase
     .from("financial_timeline")
     .update(updates)
@@ -75,4 +74,3 @@ export async function PUT(request: Request) {
 
   return NextResponse.json(data?.[0] as FinancialTimeline, { status: 200 });
 }
-// Optional: PUT and DELETE can be added similarly using URL params.

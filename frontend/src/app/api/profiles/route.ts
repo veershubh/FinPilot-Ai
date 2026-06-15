@@ -2,11 +2,11 @@
 
 import { NextResponse } from 'next/server';
 import type { ProfileInsert, ProfileUpdate } from '@/types/database';
-import { getServerSupabase } from '@/utils/supabase/server';
+import { getRouteHandlerSupabase } from '@/utils/supabase/server';
 
 /** Helper to retrieve Supabase client + current user */
 const getAuth = async (request: Request) => {
-  const supabase = await getServerSupabase();
+  const supabase = getRouteHandlerSupabase(request);
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthenticated');
   return { supabase, userId: user.id };

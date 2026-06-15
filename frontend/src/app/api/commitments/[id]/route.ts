@@ -1,6 +1,6 @@
 // src/app/api/commitments/[id]/route.ts
 import { NextResponse } from "next/server";
-import { getServerSupabase } from "@/utils/supabase/server";
+import { getRouteHandlerSupabase } from "@/utils/supabase/server";
 import type {
   Commitment,
   CommitmentPayment,
@@ -9,8 +9,8 @@ import type {
 } from "@/types/database";
 
 /** Extract authenticated user ID */
-async function getUserId(): Promise<string | null> {
-  const supabase = await getServerSupabase();
+async function getUserId(request: Request): Promise<string | null> {
+  const supabase = getRouteHandlerSupabase(request);
   const { data, error } = await supabase.auth.getUser();
   if (error) return null;
   return data?.user?.id ?? null;
@@ -25,13 +25,13 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getUserId();
+  const userId = await getUserId(request);
   if (!userId) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
 
   const { id } = await params;
-  const supabase = await getServerSupabase();
+  const supabase = getRouteHandlerSupabase(request);
 
   // Parallel fetch: commitment + payments + insights
   const [commitmentRes, paymentsRes, insightsRes] = await Promise.all([
@@ -71,14 +71,14 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getUserId();
+  const userId = await getUserId(request);
   if (!userId) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
 
   const { id } = await params;
   const updates: CommitmentUpdate = await request.json();
-  const supabase = await getServerSupabase();
+  const supabase = getRouteHandlerSupabase(request);
 
   const { data, error } = await supabase
     .from("commitments")
@@ -104,13 +104,13 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getUserId();
+  const userId = await getUserId(request);
   if (!userId) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
 
   const { id } = await params;
-  const supabase = await getServerSupabase();
+  const supabase = getRouteHandlerSupabase(request);
 
   const { error } = await supabase
     .from("commitments")

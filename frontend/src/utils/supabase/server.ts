@@ -37,3 +37,33 @@ export const getServerSupabase = async () => {
     },
   });
 };
+
+/**
+ * For API Route Handlers — reads cookies directly from the incoming Request.
+ *
+ * In Next.js 16, `cookies()` from `next/headers` does not reliably expose
+ * auth cookies inside route handlers for client-side fetch() calls.
+ * Parsing cookies from the raw Request header is the reliable approach
+ * (same pattern used by the working EMI planner route).
+ */
+export function getRouteHandlerSupabase(request: Request) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        const cookieHeader = request.headers.get("cookie");
+        if (!cookieHeader) return [];
+        return cookieHeader.split("; ").map((c) => {
+          const [name, ...rest] = c.split("=");
+          return { name, value: rest.join("=") };
+        });
+      },
+    },
+  });
+}

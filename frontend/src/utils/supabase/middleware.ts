@@ -39,9 +39,18 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
-  const isDashboard = pathname.startsWith("/dashboard");
-  const isOnboarding = pathname.startsWith("/onboarding");
-  const isProtected = isDashboard || isOnboarding;
+  const isProtected =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/commitments") ||
+    pathname.startsWith("/emi-analyzer") ||
+    pathname.startsWith("/budget-planner") ||
+    pathname.startsWith("/insights") ||
+    pathname.startsWith("/ai-assistant") ||
+    pathname.startsWith("/assets") ||
+    pathname.startsWith("/liabilities") ||
+    pathname.startsWith("/strategy");
 
   if (!user && isProtected) {
     return NextResponse.redirect(new URL("/login", request.url));

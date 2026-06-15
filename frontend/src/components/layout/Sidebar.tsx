@@ -81,7 +81,7 @@ export function Sidebar() {
       {/* Bottom */}
       <div className="px-3 py-3 border-t border-[#1F2937] space-y-1">
         <Link
-          href="#"
+          href="/settings"
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#94A3B8] hover:text-white hover:bg-white/[0.04] transition-colors"
         >
           <Settings className="w-[18px] h-[18px]" />

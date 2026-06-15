@@ -1,12 +1,12 @@
 // src/app/api/commitments/simulate/route.ts
 import { NextResponse } from "next/server";
-import { getServerSupabase } from "@/utils/supabase/server";
+import { getRouteHandlerSupabase } from "@/utils/supabase/server";
 import { buildCopilotContext } from "@/lib/commitment-ai";
 import { simulateNewCommitment } from "@/utils/commitment-calculator";
 import { HEALTH_SCORE_IMPACT } from "@/types/commitments";
 
-async function getUserId(): Promise<string | null> {
-  const supabase = await getServerSupabase();
+async function getUserId(request: Request): Promise<string | null> {
+  const supabase = getRouteHandlerSupabase(request);
   const { data, error } = await supabase.auth.getUser();
   if (error) return null;
   return data?.user?.id ?? null;
@@ -18,7 +18,7 @@ async function getUserId(): Promise<string | null> {
  * Body: { monthly_amount, original_amount, category }
  */
 export async function POST(request: Request) {
-  const userId = await getUserId();
+  const userId = await getUserId(request);
   if (!userId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
   const body = await request.json();
