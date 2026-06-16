@@ -25,7 +25,7 @@ export function Sidebar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.replace("/login");
+    window.location.href = "/login";
   };
 
   return (

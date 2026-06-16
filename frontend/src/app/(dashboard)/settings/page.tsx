@@ -118,7 +118,7 @@ export default function SettingsPage() {
   // ── Logout ────────────────────────────────────────────────────────────────
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.replace("/login");
+    window.location.href = "/login";
   };
 
   if (profileLoading) {

@@ -48,7 +48,7 @@ export function Header() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.replace("/login");
+    window.location.href = "/login";
   };
 
   const displayName = user?.name || user?.email?.split("@")[0] || "User";
