@@ -3,13 +3,37 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Calculator, Wallet, BarChart3, MessageSquare } from "lucide-react";
+import { Calculator, Wallet, BarChart3, MessageSquare, ArrowUpRight } from "lucide-react";
 
 const actions = [
-  { label: "Analyze Purchase", description: "EMI vs Full Payment", href: "/emi-analyzer", icon: Calculator, color: "bg-[#10B981]", shadow: "shadow-[#10B981]/20" },
-  { label: "Plan Budget", description: "Optimize spending", href: "/budget-planner", icon: Wallet, color: "bg-[#9333EA]", shadow: "shadow-[#9333EA]/20" },
-  { label: "View Insights", description: "Financial analytics", href: "/insights", icon: BarChart3, color: "bg-[#F59E0B]", shadow: "shadow-[#F59E0B]/20" },
-  { label: "Ask AI", description: "Chat with FinPilot", href: "/ai-chat", icon: MessageSquare, color: "bg-[#3B82F6]", shadow: "shadow-[#3B82F6]/20" },
+  {
+    label: "Analyze Purchase",
+    description: "EMI vs Full Payment",
+    href: "/emi-analyzer",
+    icon: Calculator,
+    accent: "#10B981",
+  },
+  {
+    label: "Manage Assets",
+    description: "Track your wealth",
+    href: "/assets",
+    icon: Wallet,
+    accent: "#8B5CF6",
+  },
+  {
+    label: "View Strategy",
+    description: "Financial goals",
+    href: "/strategy",
+    icon: BarChart3,
+    accent: "#F59E0B",
+  },
+  {
+    label: "Ask AI",
+    description: "Chat with FinPilot",
+    href: "/ai-assistant",
+    icon: MessageSquare,
+    accent: "#3B82F6",
+  },
 ];
 
 export function QuickActions() {
@@ -18,16 +42,38 @@ export function QuickActions() {
       {actions.map((action, index) => {
         const Icon = action.icon;
         return (
-          <motion.div key={action.href} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.1 }}>
+          <motion.div
+            key={action.href}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 + index * 0.08 }}
+          >
             <Link
               href={action.href}
-              className="block p-5 rounded-2xl border border-[#1F2937] bg-[#111827] hover:bg-[#162033] hover:border-[#374151] transition-all duration-300 group hover:-translate-y-0.5"
+              className="group block p-5 rounded-2xl border border-[#1F2937] bg-[#111827] hover:border-[#374151] hover:bg-[#162033] transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
             >
-              <div className={`w-10 h-10 rounded-xl ${action.color} flex items-center justify-center shadow-lg ${action.shadow} mb-3 group-hover:scale-105 transition-transform`}>
-                <Icon className="w-5 h-5 text-[#050816]" />
+              {/* Subtle gradient corner */}
+              <div
+                className="absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                style={{ background: `radial-gradient(circle at top right, ${action.accent}10, transparent)` }}
+              />
+
+              <div className="relative z-10">
+                {/* Landing-page icon container: bordered + bg-elevated */}
+                <div
+                  className="w-11 h-11 rounded-xl border border-[#1F2937] bg-[#0B1020] flex items-center justify-center mb-3 group-hover:border-opacity-50 transition-all duration-300"
+                  style={{ borderColor: undefined }}
+                >
+                  <Icon className="w-5 h-5 transition-colors duration-300" style={{ color: action.accent }} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-white">{action.label}</p>
+                    <p className="text-[11px] text-[#64748B] mt-0.5">{action.description}</p>
+                  </div>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-[#374151] group-hover:text-[#94A3B8] transition-colors opacity-0 group-hover:opacity-100" />
+                </div>
               </div>
-              <p className="text-sm font-semibold text-white">{action.label}</p>
-              <p className="text-xs text-[#64748B] mt-0.5">{action.description}</p>
             </Link>
           </motion.div>
         );
