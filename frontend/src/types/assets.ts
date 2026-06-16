@@ -7,6 +7,7 @@ export const ASSET_CATEGORIES = [
   'stock',
   'gold',
   'real_estate',
+  'crypto',
   'other',
 ] as const;
 export type AssetCategory = (typeof ASSET_CATEGORIES)[number];
@@ -21,6 +22,7 @@ export const ASSET_CATEGORY_LABELS: Record<AssetCategory, string> = {
   stock: 'Stock',
   gold: 'Gold',
   real_estate: 'Real Estate',
+  crypto: 'Crypto',
   other: 'Other',
 };
 
@@ -31,6 +33,7 @@ export const ASSET_CATEGORY_COLORS: Record<AssetCategory, string> = {
   stock: '#F59E0B',
   gold: '#EAB308',
   real_estate: '#EF4444',
+  crypto: '#14B8A6',
   other: '#64748B',
 };
 
@@ -86,4 +89,16 @@ export interface AssetSummary {
   overallReturns: number;
   assetCount: number;
   allocation: { category: AssetCategory; label: string; value: number; color: string }[];
+  topPerforming?: { name: string; returns: number };
+  growth?: { monthly: number; yearly: number };
+}
+
+export interface AssetHistory {
+  id: string;
+  asset_id: string;
+  user_id: string;
+  recorded_date: string;
+  value: number;
+  invested_value: number;
+  created_at: string;
 }

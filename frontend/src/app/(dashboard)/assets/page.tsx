@@ -6,14 +6,16 @@ import { PageWrapper } from "@/components/layout/PageWrapper";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { StatsCard } from "@/components/dashboard/StatsCard";
 import {
   Wallet, Building2, Gem, Landmark, TrendingUp, TrendingDown,
   Plus, X, Pencil, Trash2, Banknote, BarChart3, PiggyBank,
-  RefreshCw, ChevronDown,
+  RefreshCw, ChevronDown, Bitcoin, ArrowRight, Activity
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type { Asset, AssetInsert, AssetCategory, AssetSummary } from "@/types/assets";
 import { ASSET_CATEGORIES, ASSET_CATEGORY_LABELS, ASSET_CATEGORY_COLORS } from "@/types/assets";
+import Link from "next/link";
 
 const CATEGORY_ICONS: Record<AssetCategory, any> = {
   bank_account: Banknote,
@@ -22,6 +24,7 @@ const CATEGORY_ICONS: Record<AssetCategory, any> = {
   stock: TrendingUp,
   gold: Gem,
   real_estate: Building2,
+  crypto: Bitcoin,
   other: Wallet,
 };
 
@@ -35,11 +38,11 @@ function formatCurrency(n: number): string {
 // ─── Skeleton Loader ─────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-[#1F2937] bg-[#111827] p-5 animate-pulse">
+    <Card variant="elevated" className="p-5 animate-pulse">
       <div className="h-4 bg-[#1F2937] rounded w-1/3 mb-3" />
       <div className="h-8 bg-[#1F2937] rounded w-1/2 mb-2" />
       <div className="h-3 bg-[#1F2937] rounded w-2/3" />
-    </div>
+    </Card>
   );
 }
 
@@ -106,12 +109,12 @@ function AssetModal({
           />
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-white">Category</label>
+            <label className="block text-sm font-medium text-[#94A3B8]">Category</label>
             <div className="relative">
               <select
                 value={form.category}
                 onChange={(e) => handleChange("category", e.target.value)}
-                className="w-full rounded-xl border border-[#1F2937] bg-[#0F172A] px-4 py-3 text-sm text-white appearance-none cursor-pointer focus:outline-none focus:border-[#10B981]/50"
+                className="w-full rounded-xl border border-[#1F2937] bg-[#0B1020] px-4 py-3 text-sm text-white appearance-none cursor-pointer focus:outline-none focus:border-[#10B981]/50"
               >
                 {ASSET_CATEGORIES.map((c) => (
                   <option key={c} value={c}>{ASSET_CATEGORY_LABELS[c]}</option>
@@ -173,18 +176,18 @@ function AssetModal({
           )}
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-white">Notes</label>
+            <label className="block text-sm font-medium text-[#94A3B8]">Notes</label>
             <textarea
               value={form.notes ?? ""}
               onChange={(e) => handleChange("notes", e.target.value)}
               placeholder="Any additional details..."
               rows={2}
-              className="w-full rounded-xl border border-[#1F2937] bg-[#0F172A] px-4 py-3 text-sm text-white placeholder-[#64748B] focus:outline-none focus:border-[#10B981]/50 resize-none"
+              className="w-full rounded-xl border border-[#1F2937] bg-[#0B1020] px-4 py-3 text-sm text-white placeholder-[#64748B] focus:outline-none focus:border-[#10B981]/50 resize-none"
             />
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-[#1F2937] flex justify-end gap-3">
+        <div className="px-6 py-4 border-t border-[#1F2937] flex justify-end gap-3 bg-[#0B1020]/50">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button
             loading={saving}
@@ -271,7 +274,9 @@ export default function AssetsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!confirm("Delete this asset permanently?")) return;
     setDeletingId(id);
     try {
@@ -285,60 +290,43 @@ export default function AssetsPage() {
     }
   };
 
-  const statCards = [
-    {
-      label: "Total Asset Value",
-      value: summary ? formatCurrency(summary.totalValue) : "—",
-      icon: Wallet,
-      color: "#10B981",
-    },
-    {
-      label: "Total Invested",
-      value: summary ? formatCurrency(summary.totalInvested) : "—",
-      icon: PiggyBank,
-      color: "#3B82F6",
-    },
-    {
-      label: "Overall Returns",
-      value: summary ? `${summary.overallReturns >= 0 ? "+" : ""}${summary.overallReturns}%` : "—",
-      icon: summary && summary.overallReturns >= 0 ? TrendingUp : TrendingDown,
-      color: summary && summary.overallReturns >= 0 ? "#10B981" : "#EF4444",
-    },
-    {
-      label: "Total Assets",
-      value: summary ? String(summary.assetCount) : "—",
-      icon: BarChart3,
-      color: "#8B5CF6",
-    },
-  ];
-
   return (
-    <PageWrapper title="Assets" subtitle="Track and manage your asset portfolio">
-      {/* ── Stat Cards ────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {loading
-          ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
-          : statCards.map((s, i) => {
-              const Icon = s.icon;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <Card className="p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs font-medium text-[#64748B] uppercase tracking-wider">{s.label}</p>
-                      <div className="p-2 rounded-lg" style={{ backgroundColor: `${s.color}15` }}>
-                        <Icon className="w-4 h-4" style={{ color: s.color }} />
-                      </div>
-                    </div>
-                    <p className="text-2xl font-bold text-white">{s.value}</p>
-                  </Card>
-                </motion.div>
-              );
-            })}
+    <PageWrapper title="Assets Dashboard" subtitle="Track and analyze your net worth" badge="Portfolio">
+      {/* ── Stat Cards Widgets ────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <StatsCard
+          title="Total Value"
+          value={summary ? formatCurrency(summary.totalValue) : "—"}
+          trend={summary && summary.overallReturns >= 0 ? "up" : "down"}
+          trendValue={summary ? `${summary.overallReturns.toFixed(1)}%` : ""}
+          icon={<Wallet className="w-5 h-5" />}
+          accentColor="emerald"
+          delay={0}
+        />
+        <StatsCard
+          title="Total Invested"
+          value={summary ? formatCurrency(summary.totalInvested) : "—"}
+          icon={<PiggyBank className="w-5 h-5" />}
+          accentColor="blue"
+          delay={0.05}
+        />
+        <StatsCard
+          title="Top Performing"
+          value={summary && summary.topPerforming ? summary.topPerforming.name : "—"}
+          subtitle={summary && summary.topPerforming ? `+${summary.topPerforming.returns.toFixed(1)}% return` : "No data"}
+          icon={<Gem className="w-5 h-5" />}
+          accentColor="violet"
+          delay={0.1}
+        />
+        <StatsCard
+          title="30D Growth"
+          value={summary && summary.growth ? `${summary.growth.monthly > 0 ? '+' : ''}${summary.growth.monthly}%` : "—"}
+          trend={summary && summary.growth && summary.growth.monthly >= 0 ? "up" : "neutral"}
+          trendValue="MoM"
+          icon={<Activity className="w-5 h-5" />}
+          accentColor="amber"
+          delay={0.15}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -348,25 +336,35 @@ export default function AssetsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-6 h-full">
-            <h3 className="text-sm font-semibold text-white mb-4">Asset Allocation</h3>
+          <Card variant="elevated" className="p-6 h-full relative overflow-hidden">
+             {/* Gradient overlay */}
+             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#10B981]/5 to-transparent rounded-bl-full pointer-events-none" />
+
+            <div className="flex items-center gap-2.5 mb-6 relative z-10">
+              <div className="w-8 h-8 rounded-lg border border-[#10B981]/20 bg-[#10B981]/[0.06] flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-[#10B981]" />
+              </div>
+              <h3 className="text-sm font-semibold text-white">Asset Allocation</h3>
+            </div>
+            
             {loading ? (
               <div className="h-48 flex items-center justify-center">
                 <RefreshCw className="w-6 h-6 text-[#64748B] animate-spin" />
               </div>
             ) : summary && summary.allocation.length > 0 ? (
-              <div className="flex flex-col items-center">
-                <ResponsiveContainer width="100%" height={200}>
+              <div className="flex flex-col items-center relative z-10">
+                <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
                       data={summary.allocation}
                       cx="50%"
                       cy="50%"
-                      innerRadius={55}
-                      outerRadius={85}
+                      innerRadius={65}
+                      outerRadius={90}
                       dataKey="value"
-                      paddingAngle={2}
+                      paddingAngle={3}
                       stroke="none"
+                      cornerRadius={4}
                     >
                       {summary.allocation.map((entry, idx) => (
                         <Cell key={idx} fill={entry.color} />
@@ -375,26 +373,19 @@ export default function AssetsPage() {
                     <Tooltip
                       formatter={(value: number) => formatCurrency(value)}
                       contentStyle={{
-                        backgroundColor: "#1F2937",
-                        border: "1px solid #374151",
+                        backgroundColor: "#0B1020",
+                        border: "1px solid #1F2937",
                         borderRadius: "12px",
                         color: "#fff",
                         fontSize: "12px",
                       }}
+                      itemStyle={{ color: "#E5E7EB" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="flex flex-wrap gap-2 mt-3 justify-center">
-                  {summary.allocation.map((a) => (
-                    <div key={a.category} className="flex items-center gap-1.5 text-xs text-[#94A3B8]">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: a.color }} />
-                      {a.label}
-                    </div>
-                  ))}
-                </div>
               </div>
             ) : (
-              <div className="h-48 flex items-center justify-center text-[#64748B] text-sm">
+              <div className="h-48 flex items-center justify-center text-[#64748B] text-sm relative z-10">
                 No assets to display
               </div>
             )}
@@ -408,12 +399,18 @@ export default function AssetsPage() {
           transition={{ delay: 0.25 }}
           className="lg:col-span-2"
         >
-          <Card className="p-6 h-full">
-            <div className="flex items-center justify-between mb-4">
+          <Card variant="elevated" className="p-6 h-full relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-[#3B82F6]/5 to-transparent rounded-bl-full pointer-events-none" />
+
+            <div className="flex items-center gap-2.5 mb-6 relative z-10">
+              <div className="w-8 h-8 rounded-lg border border-[#3B82F6]/20 bg-[#3B82F6]/[0.06] flex items-center justify-center">
+                <Activity className="w-4 h-4 text-[#3B82F6]" />
+              </div>
               <h3 className="text-sm font-semibold text-white">Category Breakdown</h3>
             </div>
+
             {loading ? (
-              <div className="space-y-3">
+              <div className="space-y-4 relative z-10">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="h-4 bg-[#1F2937] rounded w-full mb-2" />
@@ -421,26 +418,29 @@ export default function AssetsPage() {
                 ))}
               </div>
             ) : summary && summary.allocation.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-4 relative z-10">
                 {summary.allocation
                   .sort((a, b) => b.value - a.value)
                   .map((a) => {
                     const pct = summary.totalValue > 0 ? (a.value / summary.totalValue) * 100 : 0;
                     return (
                       <div key={a.category}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm text-[#94A3B8]">{a.label}</span>
-                          <span className="text-sm font-medium text-white">
-                            {formatCurrency(a.value)} <span className="text-xs text-[#64748B]">({pct.toFixed(1)}%)</span>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-sm font-medium text-[#E5E7EB] flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: a.color }} />
+                             {a.label}
+                          </span>
+                          <span className="text-sm font-bold text-white">
+                            {formatCurrency(a.value)} <span className="text-xs font-normal text-[#64748B] ml-1">({pct.toFixed(1)}%)</span>
                           </span>
                         </div>
-                        <div className="h-2 rounded-full bg-[#1F2937] overflow-hidden">
+                        <div className="h-2 rounded-full bg-[#0B1020] border border-[#1F2937] overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${pct}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            transition={{ duration: 1, ease: "easeOut" }}
                             className="h-full rounded-full"
-                            style={{ backgroundColor: a.color }}
+                            style={{ backgroundColor: a.color, boxShadow: `0 0 10px ${a.color}80` }}
                           />
                         </div>
                       </div>
@@ -448,7 +448,7 @@ export default function AssetsPage() {
                   })}
               </div>
             ) : (
-              <div className="h-32 flex items-center justify-center text-[#64748B] text-sm">
+              <div className="h-32 flex items-center justify-center text-[#64748B] text-sm relative z-10">
                 Add assets to see the breakdown
               </div>
             )}
@@ -457,44 +457,44 @@ export default function AssetsPage() {
       </div>
 
       {/* ── Category Filter + Add Button ────────────────── */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <button
             onClick={() => setActiveCategory("all")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${
               activeCategory === "all"
-                ? "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20"
-                : "text-[#64748B] hover:text-white border border-transparent"
+                ? "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                : "bg-[#0B1020] text-[#94A3B8] hover:text-white border border-[#1F2937] hover:border-[#374151]"
             }`}
           >
-            All
+            All Assets
           </button>
           {ASSET_CATEGORIES.map((c) => (
             <button
               key={c}
               onClick={() => setActiveCategory(c)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                 activeCategory === c
-                  ? "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20"
-                  : "text-[#64748B] hover:text-white border border-transparent"
+                  ? "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                  : "bg-[#0B1020] text-[#94A3B8] hover:text-white border border-[#1F2937] hover:border-[#374151]"
               }`}
             >
               {ASSET_CATEGORY_LABELS[c]}
             </button>
           ))}
         </div>
-        <Button size="sm" onClick={() => setModalAsset("new")}>
+        <Button onClick={() => setModalAsset("new")} className="shadow-lg shadow-[#10B981]/20">
           <Plus className="w-4 h-4" /> Add Asset
         </Button>
       </div>
 
       {/* ── Asset List ──────────────────────────────────── */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : error ? (
-        <Card className="p-8 text-center">
+        <Card className="p-8 text-center border-red-500/20 bg-red-500/[0.02]">
           <p className="text-red-400 text-sm mb-3">{error}</p>
           <Button variant="outline" size="sm" onClick={fetchData}>
             <RefreshCw className="w-4 h-4" /> Retry
@@ -502,21 +502,23 @@ export default function AssetsPage() {
         </Card>
       ) : assets.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <Card className="p-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#10B981]/10 flex items-center justify-center mx-auto mb-4">
+          <Card variant="elevated" className="p-12 text-center">
+            <div className="w-16 h-16 rounded-2xl border border-[#10B981]/20 bg-[#10B981]/[0.06] flex items-center justify-center mx-auto mb-4">
               <Wallet className="w-8 h-8 text-[#10B981]" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-1">No assets yet</h3>
-            <p className="text-sm text-[#64748B] mb-4 max-w-sm mx-auto">
-              Start tracking your bank accounts, investments, and properties.
+            <h3 className="text-lg font-bold text-white mb-1">No assets found</h3>
+            <p className="text-sm text-[#94A3B8] mb-6 max-w-sm mx-auto">
+              {activeCategory === "all" 
+                ? "Start tracking your bank accounts, crypto, and properties to see your net worth grow." 
+                : `You don't have any ${ASSET_CATEGORY_LABELS[activeCategory as AssetCategory]} assets yet.`}
             </p>
             <Button onClick={() => setModalAsset("new")}>
-              <Plus className="w-4 h-4" /> Add Your First Asset
+              <Plus className="w-4 h-4" /> Add Asset
             </Button>
           </Card>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {assets.map((asset, i) => {
             const Icon = CATEGORY_ICONS[asset.category] ?? Wallet;
             const color = ASSET_CATEGORY_COLORS[asset.category] ?? "#64748B";
@@ -528,64 +530,58 @@ export default function AssetsPage() {
                 key={asset.id}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
+                transition={{ delay: i * 0.05 }}
               >
-                <Card hover className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className="p-2.5 rounded-xl" style={{ backgroundColor: `${color}15` }}>
-                        <Icon className="w-5 h-5" style={{ color }} />
+                <Link href={`/assets/${asset.id}`}>
+                  <Card hover variant="elevated" className="p-5 h-full flex flex-col cursor-pointer group">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div 
+                          className="w-10 h-10 rounded-xl border flex items-center justify-center bg-[#0B1020] transition-colors group-hover:bg-[#111827]" 
+                          style={{ borderColor: `${color}30` }}
+                        >
+                          <Icon className="w-5 h-5" style={{ color }} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-[15px] font-bold text-white truncate group-hover:text-[#10B981] transition-colors">{asset.name}</h4>
+                          <p className="text-xs font-medium text-[#94A3B8] mt-0.5 truncate">
+                            {ASSET_CATEGORY_LABELS[asset.category]}
+                            {asset.institution && ` · ${asset.institution}`}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-sm font-semibold text-white truncate">{asset.name}</h4>
-                        <p className="text-xs text-[#64748B] mt-0.5">
-                          {ASSET_CATEGORY_LABELS[asset.category]}
-                          {asset.institution && ` · ${asset.institution}`}
-                        </p>
+
+                      <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setModalAsset(asset); }}
+                          className="p-1.5 rounded-lg text-[#64748B] hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDelete(asset.id, e)}
+                          disabled={deletingId === asset.id}
+                          className="p-1.5 rounded-lg text-[#64748B] hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 ml-2">
-                      <button
-                        onClick={() => setModalAsset(asset)}
-                        className="p-1.5 rounded-lg text-[#64748B] hover:text-white hover:bg-white/5 transition-colors"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(asset.id)}
-                        disabled={deletingId === asset.id}
-                        className="p-1.5 rounded-lg text-[#64748B] hover:text-red-400 hover:bg-red-500/5 transition-colors disabled:opacity-50"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    <div className="mt-auto flex items-end justify-between pt-2">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#64748B] mb-1">Current Value</p>
+                        <p className="text-xl font-bold text-white tracking-tight">{formatCurrency(asset.current_value)}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold ${isPositive ? "bg-[#10B981]/10 text-[#10B981]" : "bg-[#EF4444]/10 text-[#EF4444]"}`}>
+                          {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          {returns.toFixed(1)}%
+                        </div>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="mt-4 flex items-end justify-between">
-                    <div>
-                      <p className="text-xs text-[#64748B] mb-0.5">Current Value</p>
-                      <p className="text-lg font-bold text-white">{formatCurrency(asset.current_value)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-[#64748B] mb-0.5">Returns</p>
-                      <p className={`text-sm font-semibold ${isPositive ? "text-[#10B981]" : "text-[#EF4444]"}`}>
-                        {isPositive ? "+" : ""}{returns.toFixed(1)}%
-                      </p>
-                    </div>
-                  </div>
-
-                  {asset.interest_rate > 0 && (
-                    <div className="mt-3 pt-3 border-t border-[#1F2937]">
-                      <p className="text-xs text-[#64748B]">
-                        Interest Rate: <span className="text-white">{asset.interest_rate}% p.a.</span>
-                        {asset.maturity_date && (
-                          <> · Matures: <span className="text-white">{new Date(asset.maturity_date).toLocaleDateString("en-IN")}</span></>
-                        )}
-                      </p>
-                    </div>
-                  )}
-                </Card>
+                  </Card>
+                </Link>
               </motion.div>
             );
           })}
