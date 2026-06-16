@@ -13,42 +13,62 @@ const getAuth = async (request: Request) => {
 };
 
 export async function GET(request: Request) {
-  const { supabase, userId } = await getAuth(request);
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json(data);
+  try {
+    const { supabase, userId } = await getAuth(request);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(data);
+  } catch (e: any) {
+    if (e.message === 'Unauthenticated') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
-  const { supabase, userId } = await getAuth(request);
-  const profile: ProfileInsert = await request.json();
-  // enforce id = userId
-  profile.id = userId;
-  const { data, error } = await supabase.from('profiles').insert(profile).select().single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json(data, { status: 201 });
+  try {
+    const { supabase, userId } = await getAuth(request);
+    const profile: ProfileInsert = await request.json();
+    profile.id = userId;
+    const { data, error } = await supabase.from('profiles').insert(profile).select().single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(data, { status: 201 });
+  } catch (e: any) {
+    if (e.message === 'Unauthenticated') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function PUT(request: Request) {
-  const { supabase, userId } = await getAuth(request);
-  const updates: ProfileUpdate = await request.json();
-  const { data, error } = await supabase
-    .from('profiles')
-    .update(updates)
-    .eq('id', userId)
-    .select()
-    .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json(data);
+  try {
+    const { supabase, userId } = await getAuth(request);
+    const updates: ProfileUpdate = await request.json();
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId)
+      .select()
+      .single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(data);
+  } catch (e: any) {
+    if (e.message === 'Unauthenticated') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function DELETE(request: Request) {
-  const { supabase, userId } = await getAuth(request);
-  const { error } = await supabase.from('profiles').delete().eq('id', userId);
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ success: true });
+  try {
+    const { supabase, userId } = await getAuth(request);
+    const { error } = await supabase.from('profiles').delete().eq('id', userId);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ success: true });
+  } catch (e: any) {
+    if (e.message === 'Unauthenticated') return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
+

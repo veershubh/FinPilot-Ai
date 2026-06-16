@@ -26,7 +26,10 @@ export function NotificationBell() {
   const fetchNotifications = async () => {
     try {
       const res = await fetch("/api/notifications");
-      if (res.ok) setNotifications(await res.json());
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json)) setNotifications(json);
+      }
     } catch {}
   };
 
