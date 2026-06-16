@@ -1,80 +1,80 @@
 // src/app/api/liabilities/[id]/route.ts
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
-import type { Liability, LiabilityUpdate } from "@/types/liabilities";
 
-async function getUserId(request: Request): Promise<string | null> {
-  const supabase = getRouteHandlerSupabase(request);
-  const { data, error } = await supabase.auth.getUser();
-  if (error) return null;
-  return data?.user?.id ?? null;
-}
-
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
   try {
-    const userId = await getUserId(request);
-    if (!userId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    const params = await props.params;
+    const liabilityId = params.id;
+    if (!liabilityId) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
 
-    const { id } = await params;
     const supabase = getRouteHandlerSupabase(request);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
     const { data, error } = await supabase
       .from("liabilities")
       .select("*")
-      .eq("id", id)
-      .eq("user_id", userId)
+      .eq("id", liabilityId)
+      .eq("user_id", user.id)
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 404 });
-    return NextResponse.json(data as Liability);
+    return NextResponse.json(data);
   } catch (e: any) {
+    console.error("[api/liabilities/id] GET error:", e);
     return NextResponse.json({ error: e.message ?? "Internal error" }, { status: 500 });
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: Request, props: { params: Promise<{ id: string }> }) {
   try {
-    const userId = await getUserId(request);
-    if (!userId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    const params = await props.params;
+    const liabilityId = params.id;
+    if (!liabilityId) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
 
-    const { id } = await params;
-    const body = (await request.json()) as LiabilityUpdate;
     const supabase = getRouteHandlerSupabase(request);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
-    const updatePayload: any = { ...body, updated_at: new Date().toISOString() };
+    const body = await request.json();
 
     const { data, error } = await supabase
       .from("liabilities")
-      .update(updatePayload)
-      .eq("id", id)
-      .eq("user_id", userId)
+      .update(body)
+      .eq("id", liabilityId)
+      .eq("user_id", user.id)
       .select()
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(data as Liability);
+    return NextResponse.json(data);
   } catch (e: any) {
+    console.error("[api/liabilities/id] PATCH error:", e);
     return NextResponse.json({ error: e.message ?? "Internal error" }, { status: 500 });
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
   try {
-    const userId = await getUserId(request);
-    if (!userId) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    const params = await props.params;
+    const liabilityId = params.id;
+    if (!liabilityId) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
 
-    const { id } = await params;
     const supabase = getRouteHandlerSupabase(request);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
 
     const { error } = await supabase
       .from("liabilities")
       .delete()
-      .eq("id", id)
-      .eq("user_id", userId);
+      .eq("id", liabilityId)
+      .eq("user_id", user.id);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
   } catch (e: any) {
+    console.error("[api/liabilities/id] DELETE error:", e);
     return NextResponse.json({ error: e.message ?? "Internal error" }, { status: 500 });
   }
 }

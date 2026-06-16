@@ -1,7 +1,7 @@
 // src/app/api/liabilities/route.ts
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
-import type { Liability, LiabilityInsert, LiabilitySummary } from "@/types/liabilities";
+import type { Liability, LiabilityInsert, LiabilitySummary, LIABILITY_CATEGORY_LABELS, LIABILITY_CATEGORY_COLORS } from "@/types/liabilities";
 
 async function getUserId(request: Request): Promise<string | null> {
   const supabase = getRouteHandlerSupabase(request);
@@ -22,49 +22,46 @@ export async function GET(request: Request) {
     if (isSummary) {
       const { data, error } = await supabase
         .from("liabilities")
-        .select("outstanding_balance, monthly_emi, interest_rate, original_amount, category, status")
+        .select("id, name, outstanding_balance, original_amount, monthly_emi, category, status")
         .eq("user_id", userId)
         .eq("status", "active");
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-      const items = (data ?? []) as Pick<Liability, "outstanding_balance" | "monthly_emi" | "interest_rate" | "original_amount" | "category" | "status">[];
-      const totalDebt = items.reduce((s, i) => s + (i.outstanding_balance ?? 0), 0);
-      const totalMonthlyObligation = items.reduce((s, i) => s + (i.monthly_emi ?? 0), 0);
+      const items = (data ?? []) as any[];
+      const totalOutstanding = items.reduce((s, i) => s + (i.outstanding_balance ?? 0), 0);
+      const totalOriginal = items.reduce((s, i) => s + (i.original_amount ?? 0), 0);
+      const totalMonthlyEmi = items.reduce((s, i) => s + (i.monthly_emi ?? 0), 0);
 
-      // Weighted average interest rate by outstanding balance
-      const totalWeighted = items.reduce((s, i) => s + (i.outstanding_balance ?? 0) * (i.interest_rate ?? 0), 0);
-      const weightedAvgRate = totalDebt > 0 ? Math.round((totalWeighted / totalDebt) * 100) / 100 : 0;
-
-      const categoryLabels: Record<string, string> = {
-        home_loan: 'Home Loan', vehicle_loan: 'Vehicle Loan',
-        personal_loan: 'Personal Loan', education_loan: 'Education Loan',
-        credit_card: 'Credit Card', business_loan: 'Business Loan', other: 'Other',
-      };
-      const categoryColors: Record<string, string> = {
-        home_loan: '#EF4444', vehicle_loan: '#F59E0B',
-        personal_loan: '#8B5CF6', education_loan: '#3B82F6',
-        credit_card: '#EC4899', business_loan: '#14B8A6', other: '#64748B',
-      };
-
-      const catMap: Record<string, number> = {};
+      const categoryMap: Record<string, number> = {};
       items.forEach(i => {
-        catMap[i.category] = (catMap[i.category] ?? 0) + (i.outstanding_balance ?? 0);
+        categoryMap[i.category] = (categoryMap[i.category] ?? 0) + (i.outstanding_balance ?? 0);
       });
 
-      const categoryBreakdown = Object.entries(catMap).map(([cat, val]) => ({
-        category: cat as any,
+      const categoryLabels: Record<string, string> = {
+        home_loan: 'Home Loan', auto_loan: 'Auto Loan',
+        education_loan: 'Education Loan', personal_loan: 'Personal Loan',
+        credit_card: 'Credit Card', other: 'Other',
+      };
+      const categoryColors: Record<string, string> = {
+        home_loan: '#10B981', auto_loan: '#3B82F6',
+        education_loan: '#8B5CF6', personal_loan: '#F59E0B',
+        credit_card: '#EF4444', other: '#64748B',
+      };
+
+      const allocation = Object.entries(categoryMap).map(([cat, val]) => ({
+        category: cat as import("@/types/liabilities").LiabilityCategory,
         label: categoryLabels[cat] ?? cat,
         value: val,
         color: categoryColors[cat] ?? '#64748B',
-      }));
+      })).sort((a, b) => b.value - a.value);
 
       const summary: LiabilitySummary = {
-        totalDebt,
-        totalMonthlyObligation,
-        weightedAvgRate,
+        totalOutstanding,
+        totalOriginal,
+        totalMonthlyEmi,
         liabilityCount: items.length,
-        categoryBreakdown,
+        allocation,
       };
 
       return NextResponse.json(summary);
@@ -97,8 +94,8 @@ export async function POST(request: Request) {
     const payload = {
       ...body,
       user_id: userId,
-      outstanding_balance: body.outstanding_balance ?? body.original_amount,
       status: body.status ?? "active",
+      original_amount: body.original_amount ?? body.outstanding_balance,
     };
 
     const { data, error } = await supabase.from("liabilities").insert(payload as any).select().single();
