@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/Input";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import {
   Wallet, Landmark, Plus, X, Pencil, Trash2, Home,
-  Car, GraduationCap, CreditCard, PieChart, Calendar, RefreshCw, ChevronDown
+  Car, GraduationCap, CreditCard, PieChart, Calendar, RefreshCw, ChevronDown,
+  BarChart3, Activity
 } from "lucide-react";
 import { PieChart as RePieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type { Liability, LiabilityInsert, LiabilityCategory, LiabilitySummary } from "@/types/liabilities";
@@ -289,7 +290,7 @@ export default function LiabilitiesPage() {
 
   return (
     <PageWrapper title="Liabilities Dashboard" subtitle="Manage your loans and credit cards" badge="Debt">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         <StatsCard
           title="Total Outstanding"
           value={summary ? formatCurrency(summary.totalOutstanding) : "—"}
@@ -298,18 +299,25 @@ export default function LiabilitiesPage() {
           delay={0}
         />
         <StatsCard
-          title="Total Monthly EMI"
+          title="Monthly Debt Burden"
           value={summary ? formatCurrency(summary.totalMonthlyEmi) : "—"}
           icon={<Calendar className="w-5 h-5" />}
           accentColor="blue"
           delay={0.05}
         />
         <StatsCard
-          title="Total Original Loan"
-          value={summary ? formatCurrency(summary.totalOriginal) : "—"}
-          icon={<Landmark className="w-5 h-5" />}
-          accentColor="violet"
+          title="Active Loans"
+          value={summary ? String(summary.activeLoans ?? summary.liabilityCount) : "—"}
+          icon={<Activity className="w-5 h-5" />}
+          accentColor="emerald"
           delay={0.1}
+        />
+        <StatsCard
+          title="Debt-to-Income"
+          value={summary?.debtToIncomeRatio != null ? `${summary.debtToIncomeRatio}%` : "—"}
+          icon={<BarChart3 className="w-5 h-5" />}
+          accentColor="violet"
+          delay={0.15}
         />
       </div>
 

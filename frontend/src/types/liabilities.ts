@@ -44,6 +44,7 @@ export interface Liability {
   monthly_emi: number;
   start_date: string | null;
   end_date: string | null;
+  next_due_date: string | null;
   notes: string | null;
   status: LiabilityStatus;
   created_at: string;
@@ -60,6 +61,7 @@ export interface LiabilityInsert {
   monthly_emi?: number;
   start_date?: string | null;
   end_date?: string | null;
+  next_due_date?: string | null;
   notes?: string | null;
   status?: LiabilityStatus;
 }
@@ -71,6 +73,8 @@ export interface LiabilitySummary {
   totalOriginal: number;
   totalMonthlyEmi: number;
   liabilityCount: number;
+  activeLoans: number;
+  debtToIncomeRatio: number | null;
   allocation: { category: LiabilityCategory; label: string; value: number; color: string }[];
   nextDue?: { name: string; amount: number; date: string | null };
 }
@@ -82,4 +86,26 @@ export interface LiabilityHistory {
   recorded_date: string;
   outstanding_balance: number;
   created_at: string;
+}
+
+export const PAYMENT_TYPES = ['emi', 'prepayment', 'closure'] as const;
+export type PaymentType = (typeof PAYMENT_TYPES)[number];
+
+export interface LiabilityPayment {
+  id: string;
+  liability_id: string;
+  user_id: string;
+  amount: number;
+  payment_date: string;
+  payment_type: PaymentType;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface LiabilityPaymentInsert {
+  liability_id: string;
+  amount: number;
+  payment_date?: string;
+  payment_type?: PaymentType;
+  notes?: string | null;
 }

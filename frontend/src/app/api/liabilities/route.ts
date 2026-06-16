@@ -1,7 +1,7 @@
 // src/app/api/liabilities/route.ts
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
-import type { Liability, LiabilityInsert, LiabilitySummary, LIABILITY_CATEGORY_LABELS, LIABILITY_CATEGORY_COLORS } from "@/types/liabilities";
+import type { Liability, LiabilityInsert, LiabilitySummary } from "@/types/liabilities";
 
 async function getUserId(request: Request): Promise<string | null> {
   const supabase = getRouteHandlerSupabase(request);
@@ -22,19 +22,33 @@ export async function GET(request: Request) {
     if (isSummary) {
       const { data, error } = await supabase
         .from("liabilities")
-        .select("id, name, outstanding_balance, original_amount, monthly_emi, category, status")
-        .eq("user_id", userId)
-        .eq("status", "active");
+        .select("id, name, outstanding_balance, original_amount, monthly_emi, category, status, next_due_date")
+        .eq("user_id", userId);
 
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
       const items = (data ?? []) as any[];
-      const totalOutstanding = items.reduce((s, i) => s + (i.outstanding_balance ?? 0), 0);
-      const totalOriginal = items.reduce((s, i) => s + (i.original_amount ?? 0), 0);
-      const totalMonthlyEmi = items.reduce((s, i) => s + (i.monthly_emi ?? 0), 0);
+      const activeItems = items.filter(i => i.status === "active");
+      const totalOutstanding = activeItems.reduce((s, i) => s + (i.outstanding_balance ?? 0), 0);
+      const totalOriginal = activeItems.reduce((s, i) => s + (i.original_amount ?? 0), 0);
+      const totalMonthlyEmi = activeItems.reduce((s, i) => s + (i.monthly_emi ?? 0), 0);
 
+      // Debt-to-income ratio
+      let debtToIncomeRatio: number | null = null;
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("monthly_income")
+          .eq("id", userId)
+          .single();
+        if (profile?.monthly_income && profile.monthly_income > 0) {
+          debtToIncomeRatio = Math.round((totalMonthlyEmi / profile.monthly_income) * 100);
+        }
+      } catch {}
+
+      // Category allocation
       const categoryMap: Record<string, number> = {};
-      items.forEach(i => {
+      activeItems.forEach(i => {
         categoryMap[i.category] = (categoryMap[i.category] ?? 0) + (i.outstanding_balance ?? 0);
       });
 
@@ -56,12 +70,23 @@ export async function GET(request: Request) {
         color: categoryColors[cat] ?? '#64748B',
       })).sort((a, b) => b.value - a.value);
 
+      // Next due
+      const withDue = activeItems
+        .filter(i => i.next_due_date)
+        .sort((a, b) => new Date(a.next_due_date).getTime() - new Date(b.next_due_date).getTime());
+      const nextDue = withDue.length > 0
+        ? { name: withDue[0].name, amount: withDue[0].monthly_emi ?? 0, date: withDue[0].next_due_date }
+        : undefined;
+
       const summary: LiabilitySummary = {
         totalOutstanding,
         totalOriginal,
         totalMonthlyEmi,
         liabilityCount: items.length,
+        activeLoans: activeItems.length,
+        debtToIncomeRatio,
         allocation,
+        nextDue,
       };
 
       return NextResponse.json(summary);
