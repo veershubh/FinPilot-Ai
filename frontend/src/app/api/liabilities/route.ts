@@ -1,6 +1,7 @@
 // src/app/api/liabilities/route.ts
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
+import { nextMonthlyDueDate, validatePositive } from "@/lib/finance-records";
 import type { Liability, LiabilityInsert, LiabilitySummary } from "@/types/liabilities";
 
 async function getUserId(request: Request): Promise<string | null> {
@@ -116,15 +117,29 @@ export async function POST(request: Request) {
     const body = (await request.json()) as LiabilityInsert;
     const supabase = getRouteHandlerSupabase(request);
 
+    if (!body.name?.trim()) return NextResponse.json({ error: "Liability name is required" }, { status: 400 });
+    if (!body.category) return NextResponse.json({ error: "Liability category is required" }, { status: 400 });
+    const balanceError = validatePositive(body.outstanding_balance, "Outstanding balance");
+    if (balanceError) return NextResponse.json({ error: balanceError }, { status: 400 });
+
     const payload = {
       ...body,
       user_id: userId,
+      name: body.name.trim(),
       status: body.status ?? "active",
       original_amount: body.original_amount ?? body.outstanding_balance,
+      next_due_date: body.next_due_date ?? (body.start_date ? nextMonthlyDueDate(body.start_date, 0) : null),
     };
 
     const { data, error } = await supabase.from("liabilities").insert(payload as any).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    await supabase.from("liability_history").insert({
+      liability_id: data.id,
+      user_id: userId,
+      recorded_date: new Date().toISOString().split("T")[0],
+      outstanding_balance: data.outstanding_balance,
+    } as any);
 
     return NextResponse.json(data as Liability, { status: 201 });
   } catch (e: any) {

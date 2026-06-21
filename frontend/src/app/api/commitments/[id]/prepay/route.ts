@@ -1,7 +1,8 @@
 // src/app/api/commitments/[id]/prepay/route.ts
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
-import type { Commitment } from "@/types/commitments";
+import { calculateProgress } from "@/lib/finance-records";
+import type { Commitment } from "@/types/database";
 
 /**
  * POST /api/commitments/[id]/prepay
@@ -80,10 +81,7 @@ export async function POST(
   }
 
   // New progress
-  const newProgress =
-    prev.original_amount > 0
-      ? Math.min(100, Math.round(((prev.original_amount - newOutstanding) / prev.original_amount) * 100))
-      : 100;
+  const newProgress = calculateProgress(prev.original_amount, newOutstanding);
 
   // New status
   let newStatus = prev.status;
@@ -127,9 +125,11 @@ export async function POST(
       progress_percentage: newProgress,
       status: newStatus,
       end_date: newClosureDate ?? prev.end_date,
+      next_due_date: newStatus === "completed" ? null : prev.next_due_date,
       updated_at: new Date().toISOString(),
     } as any)
     .eq("id", commitmentId)
+    .eq("user_id", user.id)
     .select()
     .single();
 

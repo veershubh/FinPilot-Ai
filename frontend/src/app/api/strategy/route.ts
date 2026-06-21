@@ -1,6 +1,7 @@
 // src/app/api/strategy/route.ts
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
+import { validatePositive } from "@/lib/finance-records";
 import type { FinancialGoal, GoalInsert, StrategySummary } from "@/types/strategy";
 
 async function getUserId(request: Request): Promise<string | null> {
@@ -77,13 +78,19 @@ export async function POST(request: Request) {
     const body = (await request.json()) as GoalInsert;
     const supabase = getRouteHandlerSupabase(request);
 
+    if (!body.title?.trim()) return NextResponse.json({ error: "Goal title is required" }, { status: 400 });
+    if (!body.category) return NextResponse.json({ error: "Goal category is required" }, { status: 400 });
+    const targetError = validatePositive(body.target_amount, "Target amount");
+    if (targetError) return NextResponse.json({ error: targetError }, { status: 400 });
+
     const payload = {
       ...body,
       user_id: userId,
+      title: body.title.trim(),
       current_amount: body.current_amount ?? 0,
       monthly_contribution: body.monthly_contribution ?? 0,
       priority: body.priority ?? "medium",
-      status: body.status ?? "active",
+      status: (body.current_amount ?? 0) >= body.target_amount ? "completed" : body.status ?? "active",
     };
 
     const { data, error } = await supabase.from("financial_goals").insert(payload as any).select().single();

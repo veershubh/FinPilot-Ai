@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
 import { generateCommitmentInsight } from "@/lib/commitment-ai";
+import { buildCommitmentTracking, validatePositive } from "@/lib/finance-records";
 import type { Commitment, CommitmentInsert } from "@/types/database";
 
 async function getUserId(request: Request): Promise<string | null> {
@@ -63,15 +64,33 @@ export async function POST(request: Request) {
   const body = (await request.json()) as CommitmentInsert;
   const supabase = getRouteHandlerSupabase(request);
 
-  const startDate = new Date(body.start_date);
-  const endDate = body.end_date ? new Date(body.end_date) : null;
-  const totalMonths = endDate ? Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 30))) : 0;
+  if (!body.title?.trim()) return NextResponse.json({ error: "Title is required" }, { status: 400 });
+  if (!body.category) return NextResponse.json({ error: "Category is required" }, { status: 400 });
+  if (!body.start_date) return NextResponse.json({ error: "Start date is required" }, { status: 400 });
+  const monthlyError = validatePositive(body.monthly_amount, "Monthly amount");
+  if (monthlyError) return NextResponse.json({ error: monthlyError }, { status: 400 });
+
+  const originalAmount = Math.max(0, Number(body.original_amount ?? body.monthly_amount));
+  const tracking = buildCommitmentTracking({
+    originalAmount,
+    outstandingBalance: body.outstanding_balance ?? originalAmount,
+    monthlyAmount: body.monthly_amount,
+    startDate: body.start_date,
+    endDate: body.end_date,
+    monthsCompleted: 0,
+  });
 
   const payload = {
-    ...body, user_id: userId,
-    outstanding_balance: body.original_amount ?? 0,
-    progress_percentage: 0, months_completed: 0,
-    months_remaining: totalMonths, next_due_date: body.start_date, status: "active",
+    ...body,
+    user_id: userId,
+    title: body.title.trim(),
+    original_amount: originalAmount,
+    outstanding_balance: tracking.outstandingBalance,
+    progress_percentage: tracking.progressPercentage,
+    months_completed: tracking.monthsCompleted,
+    months_remaining: tracking.monthsRemaining,
+    next_due_date: tracking.nextDueDate,
+    status: tracking.status,
   };
 
   const { data, error } = await supabase.from("commitments").insert(payload as any).select().single();

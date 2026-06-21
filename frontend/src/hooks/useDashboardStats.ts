@@ -7,7 +7,13 @@ export interface DashboardStats {
   monthlyIncome: number;
   monthlySavings: number;
   totalMonthlyBurden: number;
+  liabilityMonthlyEmi: number;
+  monthlyCommitments: number;
   totalOutstanding: number;
+  totalAssets: number;
+  totalLiabilities: number;
+  netWorth: number;
+  goalProgress: number;
   activeEMICount: number;
   healthScore: number;
   healthAdvice: string;

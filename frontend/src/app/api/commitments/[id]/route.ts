@@ -40,11 +40,13 @@ export async function GET(
       .from("commitment_payments")
       .select("*")
       .eq("commitment_id", id)
+      .eq("user_id", userId)
       .order("paid_date", { ascending: false }),
     supabase
       .from("commitment_ai_insights")
       .select("*")
       .eq("commitment_id", id)
+      .eq("user_id", userId)
       .order("generated_at", { ascending: false }),
   ]);
 

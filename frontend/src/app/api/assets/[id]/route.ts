@@ -45,7 +45,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // Recalculate returns if value changed
     if (body.current_value !== undefined || body.invested_value !== undefined) {
-      const { data: existing } = await supabase.from("assets").select("current_value, invested_value").eq("id", id).single();
+      const { data: existing } = await supabase
+        .from("assets")
+        .select("current_value, invested_value")
+        .eq("id", id)
+        .eq("user_id", userId)
+        .single();
       if (existing) {
         const cv = body.current_value ?? existing.current_value;
         const iv = body.invested_value ?? existing.invested_value;
@@ -62,6 +67,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    if (body.current_value !== undefined || body.invested_value !== undefined) {
+      await supabase.from("asset_history").insert({
+        asset_id: id,
+        user_id: userId,
+        recorded_date: new Date().toISOString().split("T")[0],
+        value: data.current_value,
+        invested_value: data.invested_value,
+      } as any);
+    }
+
     return NextResponse.json(data as Asset);
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? "Internal error" }, { status: 500 });

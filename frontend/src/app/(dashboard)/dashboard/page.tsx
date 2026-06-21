@@ -65,58 +65,48 @@ export default function DashboardPage() {
       {/* ═══ Stats Grid ═══════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         <StatsCard
-          title="Monthly Income"
-          value={loading ? "—" : formatINR(stats?.monthlyIncome ?? 0)}
-          trend={stats?.trends.income ?? "neutral"}
+          title="Net Worth"
+          value={loading ? "—" : formatINR(stats?.netWorth ?? 0)}
+          trend={(stats?.netWorth ?? 0) >= 0 ? "up" : "down"}
           trendValue={
-            stats?.monthlyIncome
-              ? stats.trends.income === "up"
-                ? "+8%"
-                : "Stable"
-              : "Set in profile"
+            stats ? `${formatINR(stats.totalAssets)} assets` : "Live data"
           }
           icon={<Wallet className="w-5 h-5" />}
           delay={0}
         />
         <StatsCard
-          title="Monthly Savings"
-          value={loading ? "—" : formatINR(stats?.monthlySavings ?? 0)}
-          trend={stats?.trends.savings ?? "neutral"}
+          title="Total Liabilities"
+          value={loading ? "—" : formatINR(stats?.totalLiabilities ?? 0)}
+          trend={(stats?.totalLiabilities ?? 0) > 0 ? "down" : "neutral"}
           trendValue={
-            stats?.trends.savings === "up"
-              ? "Healthy"
-              : stats?.trends.savings === "down"
-              ? "Low"
-              : "Stable"
+            stats?.totalLiabilities ? `${stats.activeEMICount} active` : "Debt free"
           }
           icon={<PiggyBank className="w-5 h-5" />}
           accentColor="violet"
           delay={0.05}
         />
         <StatsCard
-          title="Monthly Burden"
-          value={loading ? "—" : formatINR(stats?.totalMonthlyBurden ?? 0)}
+          title="Monthly Commitments"
+          value={loading ? "—" : formatINR(stats?.monthlyCommitments ?? 0)}
           trend={
-            stats && stats.totalMonthlyBurden > 0
+            stats && stats.monthlyCommitments > 0
               ? "down"
               : "neutral"
           }
           trendValue={
-            stats?.totalMonthlyBurden
-              ? `${stats.activeEMICount} active`
-              : "No EMIs"
+            stats?.monthlySavings ? `${formatINR(stats.monthlySavings)} free` : "No burden"
           }
           icon={<ShieldCheck className="w-5 h-5" />}
           accentColor="amber"
           delay={0.1}
         />
         <StatsCard
-          title="Active EMIs"
-          value={loading ? "—" : String(stats?.activeEMICount ?? 0)}
+          title="Goal Progress"
+          value={loading ? "—" : `${stats?.goalProgress ?? 0}%`}
           subtitle={
-            stats?.activeEMICount
-              ? `${formatINR(stats.totalMonthlyBurden)}/mo total`
-              : "No active installments"
+            stats?.goalProgress
+              ? "Average across goals"
+              : "Create your first goal"
           }
           icon={<TrendingUp className="w-5 h-5" />}
           accentColor="blue"

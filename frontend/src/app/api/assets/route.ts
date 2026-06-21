@@ -1,7 +1,8 @@
 // src/app/api/assets/route.ts
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
-import type { Asset, AssetInsert, AssetSummary, ASSET_CATEGORY_LABELS, ASSET_CATEGORY_COLORS } from "@/types/assets";
+import type { Asset, AssetInsert, AssetSummary } from "@/types/assets";
+import { validatePositive } from "@/lib/finance-records";
 
 async function getUserId(request: Request): Promise<string | null> {
   const supabase = getRouteHandlerSupabase(request);
@@ -125,6 +126,11 @@ export async function POST(request: Request) {
     const body = (await request.json()) as AssetInsert;
     const supabase = getRouteHandlerSupabase(request);
 
+    if (!body.name?.trim()) return NextResponse.json({ error: "Asset name is required" }, { status: 400 });
+    if (!body.category) return NextResponse.json({ error: "Asset category is required" }, { status: 400 });
+    const valueError = validatePositive(body.current_value, "Current value");
+    if (valueError) return NextResponse.json({ error: valueError }, { status: 400 });
+
     const investedValue = body.invested_value ?? body.current_value;
     const returnsPercentage = investedValue > 0
       ? ((body.current_value - investedValue) / investedValue) * 100
@@ -133,6 +139,7 @@ export async function POST(request: Request) {
     const payload = {
       ...body,
       user_id: userId,
+      name: body.name.trim(),
       invested_value: investedValue,
       returns_percentage: Math.round(returnsPercentage * 100) / 100,
       status: body.status ?? "active",
@@ -140,6 +147,14 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase.from("assets").insert(payload as any).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    await supabase.from("asset_history").insert({
+      asset_id: data.id,
+      user_id: userId,
+      recorded_date: new Date().toISOString().split("T")[0],
+      value: data.current_value,
+      invested_value: data.invested_value,
+    } as any);
 
     return NextResponse.json(data as Asset, { status: 201 });
   } catch (e: any) {

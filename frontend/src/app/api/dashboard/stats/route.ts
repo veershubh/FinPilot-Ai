@@ -2,134 +2,105 @@
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
 
-/**
- * GET /api/dashboard/stats
- *
- * Returns real-time dashboard statistics computed from
- * the user's profile and commitments data.
- */
 export async function GET(request: Request) {
   const supabase = getRouteHandlerSupabase(request);
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   if (!user) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
 
-  // ── 1. Fetch profile (for income) ──────────────────────────────────────
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("monthly_income")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, commitmentsRes, assetsRes, liabilitiesRes, goalsRes] = await Promise.all([
+    supabase.from("profiles").select("monthly_income").eq("id", user.id).single(),
+    supabase
+      .from("commitments")
+      .select("monthly_amount, outstanding_balance, status, progress_percentage")
+      .eq("user_id", user.id),
+    supabase.from("assets").select("current_value, status").eq("user_id", user.id),
+    supabase.from("liabilities").select("outstanding_balance, monthly_emi, status").eq("user_id", user.id),
+    supabase.from("financial_goals").select("target_amount, current_amount, status").eq("user_id", user.id),
+  ]);
 
   const monthlyIncome = profile?.monthly_income ?? 0;
+  const commitments = Array.isArray(commitmentsRes.data) ? commitmentsRes.data : [];
+  const assets = Array.isArray(assetsRes.data) ? assetsRes.data : [];
+  const liabilities = Array.isArray(liabilitiesRes.data) ? liabilitiesRes.data : [];
+  const goals = Array.isArray(goalsRes.data) ? goalsRes.data : [];
 
-  // ── 2. Fetch all commitments ───────────────────────────────────────────
-  const { data: commitments } = await supabase
-    .from("commitments")
-    .select(
-      "monthly_amount, outstanding_balance, status, category, progress_percentage, interest_rate"
-    )
-    .eq("user_id", user.id);
-
-  const items = Array.isArray(commitments) ? commitments : [];
-
-  const activeItems = items.filter(
-    (c) => c.status === "active" || c.status === "due_soon" || c.status === "overdue"
+  const activeCommitments = commitments.filter((c) =>
+    ["active", "due_soon", "overdue"].includes(c.status)
   );
+  const activeLiabilities = liabilities.filter((l) => l.status === "active");
+  const activeAssets = assets.filter((a) => a.status === "active");
 
-  const activeEMICount = activeItems.length;
-  const totalMonthlyBurden = activeItems.reduce(
-    (s, c) => s + (c.monthly_amount ?? 0),
-    0
-  );
-  const totalOutstanding = items.reduce(
-    (s, c) => s + (c.outstanding_balance ?? 0),
-    0
-  );
+  const totalMonthlyBurden = activeCommitments.reduce((sum, c) => sum + (c.monthly_amount ?? 0), 0);
+  const liabilityMonthlyEmi = activeLiabilities.reduce((sum, l) => sum + (l.monthly_emi ?? 0), 0);
+  const monthlyCommitments = totalMonthlyBurden + liabilityMonthlyEmi;
+  const totalOutstanding = commitments.reduce((sum, c) => sum + (c.outstanding_balance ?? 0), 0);
+  const totalAssets = activeAssets.reduce((sum, a) => sum + (a.current_value ?? 0), 0);
+  const totalLiabilities = activeLiabilities.reduce((sum, l) => sum + (l.outstanding_balance ?? 0), 0);
+  const netWorth = totalAssets - totalLiabilities;
+  const monthlySavings = Math.max(0, monthlyIncome - monthlyCommitments);
+  const activeEMICount = activeCommitments.length + activeLiabilities.length;
+  const goalProgress = goals.length
+    ? Math.round(
+        goals.reduce((sum, goal) => {
+          const progress = goal.target_amount > 0 ? (goal.current_amount / goal.target_amount) * 100 : 0;
+          return sum + Math.min(100, progress);
+        }, 0) / goals.length
+      )
+    : 0;
 
-  // ── 3. Compute savings (income minus burden) ──────────────────────────
-  const monthlySavings = Math.max(0, monthlyIncome - totalMonthlyBurden);
-
-  // ── 4. Compute health score (0–100) ───────────────────────────────────
-  //
-  // Scoring factors:
-  //   - Burden ratio   (40%): lower burden/income ratio → higher score
-  //   - Savings ratio  (30%): higher savings/income → higher score
-  //   - Progress       (20%): average repayment progress
-  //   - Overdue penalty(10%): deduction for overdue commitments
-  //
-  let healthScore = 75; // baseline for users with no data
-
+  let healthScore = 75;
   if (monthlyIncome > 0) {
-    const burdenRatio = totalMonthlyBurden / monthlyIncome;
+    const burdenRatio = monthlyCommitments / monthlyIncome;
     const savingsRatio = monthlySavings / monthlyIncome;
-    const avgProgress =
-      items.length > 0
-        ? items.reduce((s, c) => s + (c.progress_percentage ?? 0), 0) /
-          items.length
-        : 50;
-    const overdueCount = items.filter((c) => c.status === "overdue").length;
-
-    // Burden component: 100 at 0% burden, 0 at 80%+ burden
+    const avgRepaymentProgress = commitments.length
+      ? commitments.reduce((sum, c) => sum + (c.progress_percentage ?? 0), 0) / commitments.length
+      : 50;
+    const overdueCount = commitments.filter((c) => c.status === "overdue").length;
+    const netWorthScore = totalAssets > 0 ? Math.max(0, Math.min(100, ((netWorth / totalAssets) + 1) * 50)) : 50;
     const burdenScore = Math.max(0, Math.min(100, (1 - burdenRatio / 0.8) * 100));
-
-    // Savings component: 0 at 0%, 100 at 30%+
     const savingsScore = Math.min(100, (savingsRatio / 0.3) * 100);
-
-    // Progress component: direct percentage
-    const progressScore = avgProgress;
-
-    // Overdue penalty: -15 per overdue commitment, floor 0
     const overduePenalty = Math.min(100, overdueCount * 15);
 
     healthScore = Math.round(
-      burdenScore * 0.4 +
-        savingsScore * 0.3 +
-        progressScore * 0.2 +
+      burdenScore * 0.35 +
+        savingsScore * 0.25 +
+        avgRepaymentProgress * 0.15 +
+        goalProgress * 0.1 +
+        netWorthScore * 0.05 +
         (100 - overduePenalty) * 0.1
     );
     healthScore = Math.max(0, Math.min(100, healthScore));
-  } else if (items.length === 0) {
-    // New user with no income set and no commitments
-    healthScore = 75;
   }
 
-  // ── 5. Compute trends (compare to last month — simplified) ────────────
-  // Without historical data, we derive trend from commitment health
-  const burdenRatio = monthlyIncome > 0 ? totalMonthlyBurden / monthlyIncome : 0;
-  const incomeTrend =
-    monthlyIncome > 0 ? ("neutral" as const) : ("neutral" as const);
-  const savingsTrend: "up" | "down" | "neutral" =
-    monthlySavings > monthlyIncome * 0.2
-      ? "up"
-      : monthlySavings > 0
-      ? "neutral"
-      : "down";
-
-  // ── 6. Health advice ──────────────────────────────────────────────────
   let healthAdvice = "Your financial health is strong. Keep building your emergency fund.";
   if (healthScore < 40) {
-    healthAdvice =
-      "Your financial health needs attention. Consider reducing commitments or increasing income.";
+    healthAdvice = "Your financial health needs attention. Reduce high-interest debt and review monthly commitments.";
   } else if (healthScore < 70) {
-    healthAdvice =
-      "Your finances are fair. Focus on paying down high-interest debt and building savings.";
+    healthAdvice = "Your finances are fair. Focus on debt payoff consistency and goal contributions.";
   }
 
   return NextResponse.json({
     monthlyIncome,
     monthlySavings,
     totalMonthlyBurden,
+    liabilityMonthlyEmi,
+    monthlyCommitments,
     totalOutstanding,
+    totalAssets,
+    totalLiabilities,
+    netWorth,
+    goalProgress,
     activeEMICount,
     healthScore,
     healthAdvice,
     trends: {
-      income: incomeTrend,
-      savings: savingsTrend,
+      income: "neutral",
+      savings: monthlySavings > monthlyIncome * 0.2 ? "up" : monthlySavings > 0 ? "neutral" : "down",
     },
   });
 }

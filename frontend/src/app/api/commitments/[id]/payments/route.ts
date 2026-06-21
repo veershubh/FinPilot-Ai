@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getRouteHandlerSupabase } from "@/utils/supabase/server";
 import { notifyPaymentRecorded } from "@/lib/notifications";
+import { addMonths, calculateProgress } from "@/lib/finance-records";
 import type { CommitmentPayment, Commitment } from "@/types/database";
 
 /** Extract authenticated user ID */
@@ -33,6 +34,7 @@ export async function GET(
     .from("commitment_payments")
     .select("*")
     .eq("commitment_id", id)
+    .eq("user_id", userId)
     .order("paid_date", { ascending: false });
 
   if (error) {
@@ -113,16 +115,7 @@ export async function POST(
   const newOutstanding = Math.max(0, prev.outstanding_balance - amount);
   const newMonthsCompleted = prev.months_completed + 1;
   const newMonthsRemaining = Math.max(0, prev.months_remaining - 1);
-  const newProgress =
-    prev.original_amount > 0
-      ? Math.min(
-          100,
-          Math.round(
-            ((prev.original_amount - newOutstanding) / prev.original_amount) *
-              100
-          )
-        )
-      : 100;
+  const newProgress = calculateProgress(prev.original_amount, newOutstanding);
 
   // ── Step 4: Determine new status ──────────────────────────────────────────
   let newStatus = prev.status;
@@ -133,9 +126,7 @@ export async function POST(
   // Advance next due date
   let nextDue = prev.next_due_date;
   if (newStatus !== "completed" && prev.next_due_date) {
-    const dueDate = new Date(prev.next_due_date);
-    dueDate.setMonth(dueDate.getMonth() + 1);
-    nextDue = dueDate.toISOString().split("T")[0];
+    nextDue = addMonths(prev.next_due_date, 1);
   }
 
   // ── Step 5: Update commitment ─────────────────────────────────────────────
@@ -151,6 +142,7 @@ export async function POST(
       updated_at: new Date().toISOString(),
     } as any)
     .eq("id", commitmentId)
+    .eq("user_id", userId)
     .select()
     .single();
 
